@@ -250,7 +250,7 @@ exports.handler = async (event, context, callback) => {
       }
     }
 
-    if (twitterData.length < 2) {
+    if (telegramData.length < 2) {
       if (Number(moment().milliseconds()) % 2 === 0) {
         if (defiDataSorted && defiDataSorted.length > 0) {
           isDefiShow = true;
@@ -291,7 +291,7 @@ exports.handler = async (event, context, callback) => {
       }
     }
 
-    if (twitterData.length > 0) {
+    if (telegramData.length > 0) {
       // coins url
       const message = `See more on <b><a href="${website_url}${isDefiShow ? '/coins/defi' : isNFTsShow ? '/coins/nfts' : ''}">${app_name}</a></b>.`;
 

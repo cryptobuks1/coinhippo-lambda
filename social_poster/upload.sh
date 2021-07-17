@@ -1,6 +1,6 @@
 #!/bin/bash
 LAMBDA_FUNC_NAME=social_poster
-PROJECT_PATH=~/Desktop/coin/lambda/${LAMBDA_FUNC_NAME}
+PROJECT_PATH=~/Desktop/coinhippo/lambda/${LAMBDA_FUNC_NAME}
 
 cd ${PROJECT_PATH}
 zip -r ${LAMBDA_FUNC_NAME}.zip .

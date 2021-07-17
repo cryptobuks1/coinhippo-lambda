@@ -28,7 +28,7 @@ exports.handler = async (event, context, callback) => {
   const aws_s3_bucket_key = process.env.NEWS_AWS_S3_BUCKET_KEY || '{YOUR_NEWS_AWS_S3_BUCKET_KEY}';
   const s3 = new AWS.S3();
   // current time object
-  const current = moment();
+  const now = moment();
   // news filter
   const filters = ['rising','hot','bullish','bearish','important','lol'];
 
@@ -132,7 +132,6 @@ exports.handler = async (event, context, callback) => {
   return {
     telegram: {
       data: telegramData,
-      response
     },
   };
 };

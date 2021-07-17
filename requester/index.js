@@ -77,6 +77,7 @@ exports.handler = async (event, context, callback) => {
       case 'news':
         // normalize path parameter
         path = path || '/posts/';
+        path = `${path}${!path.endsWith('/') ? '/' : ''}`;
         // setup query string parameters including API key
         params = { auth_token: env[apiName].api_key, ...event.queryStringParameters };
 

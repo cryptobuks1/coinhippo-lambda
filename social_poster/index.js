@@ -76,7 +76,7 @@ exports.handler = async (event, context, callback) => {
           // go to page (retry once on first time load)
           for (let k = 0; k < (j === 0 ? 2 : 1); k++) {
             await page.goto(data[j].widget_url);
-            await page.waitForTimeout(7500);
+            await page.waitForTimeout(10000);
           }
 
           // screenshot base64 data
@@ -106,7 +106,7 @@ exports.handler = async (event, context, callback) => {
 
           // sleep before next status
           if (i < twitterData.length - 1) {
-            await sleep(5000);
+            await sleep(7500);
           }
         }
       } catch (error) {

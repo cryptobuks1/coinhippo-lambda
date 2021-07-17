@@ -297,7 +297,7 @@ exports.handler = async (event, context, callback) => {
 
       // add message
       if (message) {
-        telegramData.push(message);
+        telegramData[telegramData.length - 1] += `\n\n${message}`;
       }
     }
   }

@@ -1,6 +1,6 @@
 /************************************************
  * This code is a function for calculate markets alert data from coingecko API to post on social.
- * Deploy on AWS Lambda (triggered by AWS CloudWatch)
+ * Deploy on AWS Lambda (triggered by AWS EventBridge)
  ************************************************/
 exports.handler = async (event, context, callback) => {
   // import module for submitting request.

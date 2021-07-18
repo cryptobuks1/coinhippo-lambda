@@ -51,6 +51,19 @@ exports.handler = async (event, context, callback) => {
     // load emoji font
     await chromium.font('https://raw.githack.com/googlei18n/noto-emoji/master/fonts/NotoColorEmoji.ttf');
 
+    // initial browser
+    const browser = await chromium.puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
+    });
+
+    // initial page
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1440, height: 900 });
+
     for (let i = 0; i < twitterData.length; i++) {
       try {
         const status = twitterData[i].text;
@@ -59,25 +72,10 @@ exports.handler = async (event, context, callback) => {
         // uploaded media ids
         const mediaIds = [];
 
-        // initial browser
-        const browser = await chromium.puppeteer.launch({
-          args: chromium.args,
-          defaultViewport: chromium.defaultViewport,
-          executablePath: await chromium.executablePath,
-          headless: chromium.headless,
-          ignoreHTTPSErrors: true,
-        });
-
-        // initial page
-        const page = await browser.newPage();
-        await page.setViewport({ width: 1440, height: 900 });
-
         for (let j = 0; j < data.length; j++) {
-          // go to page (retry once on first time load)
-          for (let k = 0; k < (j === 0 ? 2 : 1); k++) {
-            await page.goto(data[j].widget_url);
-            await page.waitForTimeout(12500);
-          }
+          // go to page
+          await page.goto(data[j].widget_url);
+          await page.waitForTimeout(10000);
 
           // screenshot base64 data
           const media = await page.screenshot({ clip: { x: 520, y: 274, width: 400, height: 348 }, encoding: 'base64' });
@@ -94,25 +92,25 @@ exports.handler = async (event, context, callback) => {
           }
         }
 
-        // close page
-        await page.close();
-
-        // close browser
-        await browser.close();
-
         if (mediaIds.length > 0) {
           // tweet
           await twitterClient.tweets.statusesUpdate({ status, media_ids: mediaIds.join(',') });
 
           // sleep before next status
           if (i < twitterData.length - 1) {
-            await sleep(7500);
+            await sleep(5000);
           }
         }
       } catch (error) {
         twitterError = error;
       }
     }
+
+    // close page
+    await page.close();
+
+    // close browser
+    await browser.close();
   }
 
   // return data

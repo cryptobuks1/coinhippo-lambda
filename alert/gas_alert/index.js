@@ -6,6 +6,9 @@ exports.handler = async (event, context, callback) => {
   // import module for submitting request.
   const axios = require('axios');
 
+  // import modules
+  const _ = require('lodash');
+
   // output data
   const telegramData = [];
 

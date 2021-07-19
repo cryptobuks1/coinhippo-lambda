@@ -1,6 +1,6 @@
 #!/bin/bash
 LAMBDA_FUNC_NAME=hippo_alert
-PROJECT_PATH=~/Desktop/coinhippo/lambda/alert/${LAMBDA_FUNC_NAME}
+PROJECT_PATH=~/Desktop/coinhippo.io/lambda/alert/${LAMBDA_FUNC_NAME}
 
 cd ${PROJECT_PATH}
 zip -r ${LAMBDA_FUNC_NAME}.zip .

@@ -75,7 +75,7 @@ exports.handler = async (event, context, callback) => {
         for (let j = 0; j < data.length; j++) {
           // go to page
           await page.goto(data[j].widget_url);
-          await page.waitForTimeout(10000);
+          await page.waitForTimeout(12500);
 
           // screenshot base64 data
           const media = await page.screenshot({ clip: { x: 520, y: 274, width: 400, height: 348 }, encoding: 'base64' });

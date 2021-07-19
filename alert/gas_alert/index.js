@@ -58,9 +58,12 @@ exports.handler = async (event, context, callback) => {
   response = await request(path, params);
   const gasData = response && response.result;
 
+  // average gas price for calculate
+  const avgGas = _.mean([gasData.SafeGasPrice, gasData.ProposeGasPrice, gasData.FastGasPrice]);
+
   // process gas data
-  if (gasData && gasData.ProposeGasPrice <= gas_gwei_threshold) {
-    const message =`The <b>⛽ ETH Gas</b> is ${gasData.ProposeGasPrice <= gas_gwei_threshold * 0.66 ? 'very low' : 'not high'}. Maybe it's time to <b><a href="${website_url}/coins/defi">DeFi</a></b> or <b><a href="${website_url}/coins/nfts">NFTs</a></b>. 😁👍\nLow: <b>${gasData.SafeGasPrice}</b> Gwei\nAverage: <b>${gasData.ProposeGasPrice}</b> Gwei\nHigh: <b>${gasData.FastGasPrice}</b> Gwei\n\nData from <a href="${gas_source_url}">${gas_source_name}</a>`;
+  if (gasData && avgGas <= gas_gwei_threshold) {
+    const message =`The <b>⛽ ETH Gas</b> is ${avgGas <= gas_gwei_threshold * 0.66 ? 'very low' : 'not high'}. Maybe it's time to <b><a href="${website_url}/coins/defi">DeFi</a></b> or <b><a href="${website_url}/coins/nfts">NFTs</a></b>. 😁👍\nLow: <b>${gasData.SafeGasPrice}</b> Gwei\nAverage: <b>${gasData.ProposeGasPrice}</b> Gwei\nHigh: <b>${gasData.FastGasPrice}</b> Gwei\n\nData from <a href="${gas_source_url}">${gas_source_name}</a>`;
 
     // add message
     telegramData.push(message);

@@ -310,7 +310,7 @@ exports.handler = async (event, context, callback) => {
       const data = _.slice(marketCapDataSorted.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
       data.forEach((c, i) => {
         // title
-        message += `${i === 0 ? `Let's check on the top${data.length > 1 ? ` ${data.length}` : ''} changes on the High Market Cap Coins 🧐` : ''}\n`;
+        message += `${i === 0 ? `Let's check on the top${data.length > 1 ? ` ${data.length}` : '%'} changes on the High Market Cap Coins 🧐` : ''}\n`;
 
         // coin message
         message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
@@ -361,7 +361,7 @@ exports.handler = async (event, context, callback) => {
         const data = _.slice(defiDataSorted, 0, 3);
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? '🦄 Update on the top${data.length > 1 ? ` ${data.length}` : ''} DeFi from their last 24h prices:' : ''}\n`;
+          message += `${i === 0 ? `🦄 Update on the top${data.length > 1 ? ` ${data.length}` : ''} DeFi from their last 24h prices:` : ''}\n`;
 
           // coin message
           message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
@@ -387,7 +387,7 @@ exports.handler = async (event, context, callback) => {
         const data = _.slice(nftsDataSorted, 0, 3);
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? '🌠 Update on the top${data.length > 1 ? ` ${data.length}` : ''} NFTs from their last 24h prices:' : ''}\n`;
+          message += `${i === 0 ? `🌠 Update on the top${data.length > 1 ? ` ${data.length}` : ''} NFTs from their last 24h prices:` : ''}\n`;
 
           // coin message
           message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;

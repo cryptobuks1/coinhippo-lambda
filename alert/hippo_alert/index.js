@@ -30,7 +30,7 @@ exports.handler = async (event, context, callback) => {
   const huge_coins = ['btc','eth','usdt','busd','usdc'];
   const blockchains = [
     { chain: 'ethereum', explorer_chain: 'eth-mainnet' },
-    { chain: 'bsc', explorer_chain: 'bsc-mainnet', keywords: ['binancechain'] },
+    { chain: 'binancechain', explorer_chain: 'bsc-mainnet' },
     { chain: 'matic', explorer_chain: 'matic-mainnet', keywords: ['matic', 'polygon'] },
     { chain: 'avalanche', explorer_chain: 'avalanche-mainnet' },
     { chain: 'fantom', explorer_chain: 'fantom-mainnet' },

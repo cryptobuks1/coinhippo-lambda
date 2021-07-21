@@ -62,7 +62,7 @@ exports.handler = async (event, context, callback) => {
   const gasData = response && response.result;
 
   // average gas price for calculate
-  const avgGas = _.mean([gasData.SafeGasPrice, gasData.ProposeGasPrice, gasData.FastGasPrice]);
+  const avgGas = _.mean([gasData.SafeGasPrice, gasData.ProposeGasPrice, gasData.FastGasPrice].map(gas => Number(gas)));
 
   // process gas data
   if (gasData && avgGas <= gas_gwei_threshold) {

@@ -1,0 +1,10 @@
+{
+  "name": "blogs",
+  "version": "0.0.1",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.843.0",
+    "axios": "^0.21.1",
+    "lodash": "^4.17.21"
+  }
+}

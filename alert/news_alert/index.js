@@ -13,10 +13,14 @@ exports.handler = async (event, context, callback) => {
 
   // output data
   const telegramData = [];
+  const feedsData = [];
 
   // constant
   const api_host = process.env.REQUESTER_API_HOST || '{YOUR_REQUEST_API_HOST}';
   const poster_api_host = process.env.POSTER_API_HOST || '{YOUR_POSTER_API_HOST}';
+  const dynamodb_api_host = process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}';
+  const dynamodb_table_name = process.env.DYNAMODB_TABLE_NAME || 'coinhippo-feeds';
+  const dynamodb_feeds_type = 'news';
   // aws for save latest news
   AWS.config.update({
     accessKeyId: process.env.NEWS_AWS_ACCESS_KEY_ID || '{YOUR_NEWS_AWS_ACCESS_KEY_ID}',
@@ -103,10 +107,14 @@ exports.handler = async (event, context, callback) => {
     // filter only first nearby latest news
     newsData = _.slice(newsData, 0, 1);
 
-    // add message
     newsData.forEach(d => {
       const message =`${d.kind === 'media' ? d.domain && d.domain.indexOf('youtube') > -1 ? '📺' : '🎙' : '📰'} ${d.title}\n\nvia ${d.source.title}\n\n<a href="${d.url.replace(d.slug, 'click/')}">See more</a>`;
+
+      // add message
       telegramData.push(message);
+
+      // add feed
+      feedsData.push({ id: `${dynamodb_feeds_type}_${d.id}`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(d) });
     });
 
     // save latest news id to aws s3
@@ -128,10 +136,30 @@ exports.handler = async (event, context, callback) => {
     } catch (error) {}
   }
 
+  // save feeds data to dynamodb
+  if (feedsData.length > 0) {
+    for (let i = 0; i < feedsData.length; i++) {
+      const feedData = feedsData[i];
+
+      try {
+        await axios.post(
+          dynamodb_api_host, {
+            table_name: dynamodb_table_name,
+            method: 'put',
+            ...feedData,
+          }
+        ).catch(error => error);
+      } catch (error) {}
+    }
+  }
+
   // return data
   return {
     telegram: {
       data: telegramData,
+    },
+    feeds: {
+      data: feedsData,
     },
   };
 };

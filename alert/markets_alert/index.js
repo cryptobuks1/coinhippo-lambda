@@ -44,10 +44,14 @@ exports.handler = async (event, context, callback) => {
   // output data
   let telegramData = [];
   let twitterData = [];
+  let feedsData = [];
 
   // constant
   const api_host = process.env.REQUESTER_API_HOST || '{YOUR_REQUEST_API_HOST}';
   const poster_api_host = process.env.POSTER_API_HOST || '{YOUR_POSTER_API_HOST}';
+  const dynamodb_api_host = process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}';
+  const dynamodb_table_name = process.env.DYNAMODB_TABLE_NAME || 'coinhippo-feeds';
+  const dynamodb_feeds_type = 'markets';
   const website_url = process.env.WEBSITE_URL || 'https://coinhippo.io';
   const app_name = process.env.APP_NAME || 'CoinHippo';
   const vs_currency = 'usd';
@@ -146,9 +150,9 @@ exports.handler = async (event, context, callback) => {
     let telegramMessage = '';
     let twitterMessage = '';
 
-    const data = _.slice(allTimeHighData, 0, 3);
+    const data = _.slice(allTimeHighData, 0, 3).map(c => { return { ...c, high_price: _.max([c.ath, c.current_price, c.high_24h].filter(x => typeof x === 'number')) }; });
     data.forEach((c, i) => {
-      const highPrice = _.max([c.ath, c.current_price, c.high_24h].filter(x => typeof x === 'number'));
+      const highPrice = c.high_price;
 
       // title
       telegramMessage += `${i === 0 ? '🔥 <b>ALL TIME HIGH</b>' : ''}\n`;
@@ -163,6 +167,9 @@ exports.handler = async (event, context, callback) => {
     // add message
     if (telegramMessage) {
       telegramData.push(telegramMessage);
+
+      // add feed
+      feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_ath`, FeedType: dynamodb_feeds_type, Message: telegramMessage, Json: JSON.stringify(data) });
     }
 
     // coin url
@@ -183,9 +190,9 @@ exports.handler = async (event, context, callback) => {
     let telegramMessage = '';
     let twitterMessage = '';
 
-    const data = _.slice(allTimeLowData, 0, 3);
+    const data = _.slice(allTimeLowData, 0, 3).map(c => { return { ...c, low_price: _.min([c.atl, c.current_price, c.low_24h].filter(x => typeof x === 'number')) }; });
     data.forEach((c, i) => {
-      const lowPrice = _.min([c.atl, c.current_price, c.low_24h].filter(x => typeof x === 'number'));
+      const lowPrice = c.low_price;
 
       // title
       telegramMessage += `${i === 0 ? '‼️ <b>ALL TIME LOW</b>' : ''}\n`;
@@ -200,6 +207,9 @@ exports.handler = async (event, context, callback) => {
     // add message
     if (telegramMessage) {
       telegramData.push(telegramMessage);
+    
+      // add feed
+      feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_atl`, FeedType: dynamodb_feeds_type, Message: telegramMessage, Json: JSON.stringify(data) });
     }
 
     // coin url
@@ -220,7 +230,9 @@ exports.handler = async (event, context, callback) => {
 
     if (marketCapDataSorted && marketCapDataSorted.length > 0) {
       let message = '';
-      _.slice(marketCapDataSorted.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3).forEach((c, i) => {
+      const data = _.slice(marketCapDataSorted.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
+
+      data.forEach((c, i) => {
         // title
         message += `${i === 0 ? '🧐 <b>Top % Change on High Market Cap Coins</b>' : ''}\n`;
 
@@ -231,12 +243,17 @@ exports.handler = async (event, context, callback) => {
       // add message
       if (message) {
         telegramData.push(message);
+
+        // add feed
+        feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_marketcap`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
       }
     }
 
     if (Number(moment().seconds()) % 3 < 2 && trendingDataSorted && trendingDataSorted.length > 0) {
       let message = '';
-      _.slice(trendingDataSorted, 0, 3).forEach((c, i) => {
+      const data =_.slice(trendingDataSorted, 0, 3);
+
+      data.forEach((c, i) => {
         // title
         message += `${i === 0 ? '🤔 <b>Trending Now</b>' : ''}\n`;
 
@@ -247,6 +264,9 @@ exports.handler = async (event, context, callback) => {
       // add message
       if (message) {
         telegramData.push(message);
+
+        // add feed
+        feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_trending`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
       }
     }
 
@@ -256,7 +276,9 @@ exports.handler = async (event, context, callback) => {
           isDefiShow = true;
 
           let message = '';
-          _.slice(defiDataSorted, 0, 3).forEach((c, i) => {
+          const data = _.slice(defiDataSorted, 0, 3);
+
+          data.forEach((c, i) => {
             // title
             message += `${i === 0 ? '🦄 <b>Top DeFi</b>' : ''}\n`;
 
@@ -267,6 +289,9 @@ exports.handler = async (event, context, callback) => {
           // add message
           if (message) {
             telegramData.push(message);
+
+            // add feed
+            feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_defi`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
           }
         }
       }
@@ -275,7 +300,9 @@ exports.handler = async (event, context, callback) => {
           isNFTsShow = true;
 
           let message = '';
-          _.slice(nftsDataSorted, 0, 3).forEach((c, i) => {
+          const data = _.slice(nftsDataSorted, 0, 3);
+
+          data.forEach((c, i) => {
             // title
             message += `${i === 0 ? '🌠 <b>Top NFTs</b>' : ''}\n`;
 
@@ -286,6 +313,9 @@ exports.handler = async (event, context, callback) => {
           // add message
           if (message) {
             telegramData.push(message);
+
+            // add feed
+            feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_nfts`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
           }
         }
       }
@@ -442,7 +472,10 @@ exports.handler = async (event, context, callback) => {
 
         // add message
         if (telegramMessage) {
-          telegramData = [telegramMessage].concat(telegramData);
+          telegramData = [telegramMessage];//.concat(telegramData);
+
+          // add feed
+          feedsData = [{ id: `${dynamodb_feeds_type}_${moment().unix()}_${marketStatus}`, FeedType: dynamodb_feeds_type, Message: telegramMessage, Json: JSON.stringify(coinsData) }];//.concat(feedsData);
         }
 
         if (!hasAllTime && Number(moment().hours()) % 2 === 0) {
@@ -467,7 +500,10 @@ exports.handler = async (event, context, callback) => {
 
     // add message
     if (telegramMessage) {
-      telegramData = [telegramMessage].concat(telegramData);
+      telegramData = [telegramMessage];//.concat(telegramData);
+
+      // add feed
+      feedsData = [{ id: `${dynamodb_feeds_type}_${moment().unix()}_bitcoin`, FeedType: dynamodb_feeds_type, Message: telegramMessage, Json: JSON.stringify([c]) }];//.concat(feedsData);
     }
 
     if (Number(moment().hours()) % 24 === 0) {
@@ -508,6 +544,24 @@ exports.handler = async (event, context, callback) => {
     } catch (error) {}
   }
 
+  // save feeds data to dynamodb
+  if (feedsData.length > 0) {
+    feedsData = _.reverse(feedsData);
+    for (let i = 0; i < feedsData.length; i++) {
+      const feedData = feedsData[i];
+
+      try {
+        await axios.post(
+          dynamodb_api_host, {
+            table_name: dynamodb_table_name,
+            method: 'put',
+            ...feedData,
+          }
+        ).catch(error => error);
+      } catch (error) {}
+    }
+  }
+
   // return data
   return {
     telegram: {
@@ -515,6 +569,9 @@ exports.handler = async (event, context, callback) => {
     },
     twitter: {
       data: twitterData,
-    }
+    },
+    feeds: {
+      data: feedsData,
+    },
   };
 };

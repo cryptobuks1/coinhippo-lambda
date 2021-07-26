@@ -15,13 +15,15 @@ exports.handler = async (event, context, callback) => {
     region: process.env.DYNAMODB_AWS_REGION || 'us-east-1',
   });
   // aws dynamodb
-  const db = new AWS.DynamoDB().DocumentClient();
+  const db = new AWS.DynamoDB();
 
   // normalize item for dynamodb validatation
   const normalizeObject = item => {
     Object.keys(item).forEach(i => {
       try {
-        item[i] = JSON.parse(item[i]);
+        if (i !== 'Json') {
+          item[i] = JSON.parse(item[i]);
+        }
       } catch (error) {}
 
       try {
@@ -91,30 +93,34 @@ exports.handler = async (event, context, callback) => {
   // response data variable
   let response = null;
 
-  if (event.queryStringParameters && event.queryStringParameters.table_name) {
+  const body = event.body && JSON.parse(event.body);
+
+  if (body && body.table_name) {
     const current_timestamp = moment().unix();
 
+    const _body = { ...body };
+
     // set table name
-    const table_name = event.queryStringParameters.table_name;
-    delete event.queryStringParameters.table_name;
+    const table_name = _body.table_name;
+    delete body.table_name;
     // set method
-    const method = event.queryStringParameters.method; // scan, get, put, update, delete
-    delete event.queryStringParameters.method;
+    const method = _body.method; // scan, get, put, update, delete
+    delete body.method;
     // set max items
-    const max_items = event.queryStringParameters.max_items || 25;
-    delete event.queryStringParameters.max_items;
+    const max_items = _body.max_items || 25;
+    delete body.max_items;
     // set projection expression
-    const projection = event.queryStringParameters.projection || 'id, CreatedAt, Json';
-    delete event.queryStringParameters.projection;
+    const projection = _body.projection || 'id, CreatedAt, UpdatedAt, FeedType, Message, Json';
+    delete body.projection;
     // set filter expression
-    const filter = event.queryStringParameters.filter;
-    delete event.queryStringParameters.filter;
+    const filter = _body.filter;
+    delete body.filter;
     // set key expression
-    const key = event.queryStringParameters.key;
-    delete event.queryStringParameters.key;
+    const key = _body.key;
+    delete body.key;
     // set update expression
-    const update = event.queryStringParameters.update;
-    delete event.queryStringParameters.update;
+    const update = _body.update;
+    delete body.update;
 
     // parameters for action
     const params = {
@@ -140,27 +146,27 @@ exports.handler = async (event, context, callback) => {
     // do action
     switch(method) {
       case 'scan':
-        params.ExpressionAttributeValues = normalizeObject({ ...event.queryStringParameters });
+        params.ExpressionAttributeValues = normalizeObject({ ...body });
         response = { data: await scan(params) };
         break;
       case 'get':
-        params.Key = normalizeObject({ ...event.queryStringParameters });
+        params.Key = normalizeObject({ ...body });
         response = { data: await get(params) };
         break;
       case 'put':
-        params.Item = normalizeObject({ ...event.queryStringParameters, CreatedAt: current_timestamp });
+        params.Item = normalizeObject({ ...body, CreatedAt: current_timestamp, UpdatedAt: current_timestamp });
         response = { data: await put(params) };
         break;
       case 'update':
-        params.ExpressionAttributeValues = normalizeObject({ ...event.queryStringParameters, UpdatedAt: current_timestamp });
+        params.ExpressionAttributeValues = normalizeObject({ ...body, UpdatedAt: current_timestamp });
         response = { data: await update(params) };
         break;
       case 'delete':
-        params.Key = normalizeObject({ ...event.queryStringParameters });
+        params.Key = normalizeObject({ ...body });
         response = { data: await deleteItem(params) };
         break;
       default:
-        break;      
+        break;
     }
   }
   // auto migrate data
@@ -193,7 +199,7 @@ exports.handler = async (event, context, callback) => {
           };
 
           await deleteItem(params);
-        catch (error) {}
+        } catch (error) {}
       }
     }
   }

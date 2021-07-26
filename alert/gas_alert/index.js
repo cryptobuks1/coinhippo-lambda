@@ -8,13 +8,18 @@ exports.handler = async (event, context, callback) => {
 
   // import modules
   const _ = require('lodash');
+  const moment = require('moment');
 
   // output data
   const telegramData = [];
+  const feedsData = [];
 
   // constant
   const api_host = process.env.REQUESTER_API_HOST || '{YOUR_REQUEST_API_HOST}';
   const poster_api_host = process.env.POSTER_API_HOST || '{YOUR_POSTER_API_HOST}';
+  const dynamodb_api_host = process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}';
+  const dynamodb_table_name = process.env.DYNAMODB_TABLE_NAME || 'coinhippo-feeds';
+  const dynamodb_feeds_type = 'gas';
   const website_url = process.env.WEBSITE_URL || 'https://coinhippo.io';
   const gas_gwei_threshold = Number(process.env.GAS_GWEI_THRESHOLD) || 15;
   const gas_source_url = process.env.GAS_SOURCE_URL || 'https://etherscan.io/gastracker';
@@ -70,6 +75,9 @@ exports.handler = async (event, context, callback) => {
 
     // add message
     telegramData.push(message);
+
+    // add feed
+    feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(gasData) });
   }
 
   // post data to social poster
@@ -80,10 +88,30 @@ exports.handler = async (event, context, callback) => {
     } catch (error) {}
   }
 
+  // save feeds data to dynamodb
+  if (feedsData.length > 0) {
+    for (let i = 0; i < feedsData.length; i++) {
+      const feedData = feedsData[i];
+
+      try {
+        await axios.post(
+          dynamodb_api_host, {
+            table_name: dynamodb_table_name,
+            method: 'put',
+            ...feedData,
+          }
+        ).catch(error => error);
+      } catch (error) {}
+    }
+  }
+
   // return data
   return {
     telegram: {
       data: telegramData,
+    },
+    feeds: {
+      data: feedsData,
     },
   };
 };

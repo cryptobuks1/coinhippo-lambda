@@ -14,10 +14,14 @@ exports.handler = async (event, context, callback) => {
   // output data
   const telegramData = [];
   const twitterData = [];
+  const feedsData = [];
 
   // constant
   const api_host = process.env.REQUESTER_API_HOST || '{YOUR_REQUEST_API_HOST}';
   const poster_api_host = process.env.POSTER_API_HOST || '{YOUR_POSTER_API_HOST}';
+  const dynamodb_api_host = process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}';
+  const dynamodb_table_name = process.env.DYNAMODB_TABLE_NAME || 'coinhippo-feeds';
+  const dynamodb_feeds_type = 'whales';
   const website_url = process.env.WEBSITE_URL || 'https://coinhippo.io';
   const explorer_url = process.env.EXPLORER_URL || 'https://explorers.coinhippo.io';
   const alert_website_url = process.env.ALERT_WEBSITE_URL || 'https://whale-alert.io';
@@ -106,8 +110,43 @@ exports.handler = async (event, context, callback) => {
     // filter amount for alert on telegram
     transactionsSorted = transactionsSorted.filter(x => x.value && x.amount_usd >= (x.transaction_type !== 'transfer' ? 2 : x.is_donation || x.is_hacked ? 0.5 : 5) * (x.from_address_name.toLowerCase() === x.to_address_name.toLowerCase() && huge_coins.indexOf(x.symbol) > -1 ? 2 : 1) * min_amount);
 
+    transactionsSorted = transactionsSorted.map(x => {
+      let tx_url;
+
+      if (x.blockchain.toLowerCase() === 'bitcoin') {
+        tx_url = `https://www.blockchain.com/btc/tx/${x.key}`;
+      }
+      else if (x.blockchain.toLowerCase() === 'ethereum') {
+        tx_url = `https://etherscan.io/tx/${!(x.key.startsWith('0x')) ? '0x' : ''}${x.key}`;
+      }
+      else if (x.blockchain.toLowerCase() === 'binancechain') {
+        tx_url = `https://bscscan.com/tx/${!(x.key.startsWith('0x')) ? '0x' : ''}${x.key}`;
+      }
+      else if (x.blockchain.toLowerCase() === 'ripple') {
+        tx_url = `https://xrpscan.com/ledger/${x.key}`;
+      }
+      else if (x.blockchain.toLowerCase() === 'neo') {
+        tx_url = `https://neoscan.io/transaction/${x.key}`;
+      }
+      else if (x.blockchain.toLowerCase() === 'eos') {
+        tx_url = `https://eosflare.io/tx/${x.key}`;
+      }
+      else if (x.blockchain.toLowerCase() === 'stellar') {
+        tx_url = `https://stellarchain.io/tx/${x.key}`;
+      }
+      else if (x.blockchain.toLowerCase() === 'tron') {
+        tx_url = `https://tronscan.org/#/transaction/${x.key}`;
+      }
+      else {
+        tx_url = `${alert_website_url}/transaction/${x.blockchain}/${x.key}`;
+      }
+
+      return { ...x, tx_url };
+    });
+
     if (transactionsSorted.length > 0) {
       let message = '';
+      const data = [];
 
       // select top 5 and sort by timestamp
       _.orderBy(_.slice(transactionsSorted, 0, 5), ['timestamp'], ['asc']).forEach((x, i) => {
@@ -119,8 +158,10 @@ exports.handler = async (event, context, callback) => {
         const from_url = index > -1 && x.from_addresses.length === 1 ? `${explorer_url}/${blockchains[index].explorer_chain}/address/0x${x.from_addresses[0]}` : '';
         const to_url = index > -1 && x.to_addresses.length === 1 ? `${explorer_url}/${blockchains[index].explorer_chain}/address/0x${x.to_addresses[0]}` : '';
 
+        data.push({ ...x, from_url, to_url });
+
         // transaction message
-        message += `${repeatEmoticon(x.transaction_type === 'mint' ? '🖨' : x.transaction_type === 'burn' ? '🔥' : x.transaction_type === 'lock' ? '🔐' : x.transaction_type === 'unlock' ? '🔓' : x.is_donation ? '🎁' : x.is_hacked ? '🥷' : x.amount_usd < 5 * min_amount ? '🐬' : x.amount_usd < 10 * min_amount ? '🦈' : x.amount_usd < 50 * min_amount ? '🐳' : '🐋', x.amount_usd, x)} <b><a href="${alert_website_url}/transaction/${x.blockchain}/${x.key}">${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'}</a></b>: ${numeral(x.amount).format('0,0')} <b>${x.symbol.toUpperCase()}</b> (${currency_symbol}${numeral(x.amount_usd).format('0,0')}) ${x.transaction_type === 'mint' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : x.transaction_type === 'burn' ? `at <b>${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}</b>` : x.transaction_type === 'lock' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : x.transaction_type === 'unlock' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : `<b>${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}</b> ➡️ <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>`}`;
+        message += `${repeatEmoticon(x.transaction_type === 'mint' ? '🖨' : x.transaction_type === 'burn' ? '🔥' : x.transaction_type === 'lock' ? '🔐' : x.transaction_type === 'unlock' ? '🔓' : x.is_donation ? '🎁' : x.is_hacked ? '🥷' : x.amount_usd < 5 * min_amount ? '🐬' : x.amount_usd < 10 * min_amount ? '🦈' : x.amount_usd < 50 * min_amount ? '🐳' : '🐋', x.amount_usd, x)} <b><a href="${x.tx_url}">${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'}</a></b>: ${numeral(x.amount).format('0,0')} <b>${x.symbol.toUpperCase()}</b> (${currency_symbol}${numeral(x.amount_usd).format('0,0')}) ${x.transaction_type === 'mint' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : x.transaction_type === 'burn' ? `at <b>${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}</b>` : x.transaction_type === 'lock' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : x.transaction_type === 'unlock' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : `<b>${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}</b> ➡️ <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>`}`;
       });
 
       // add message
@@ -128,6 +169,9 @@ exports.handler = async (event, context, callback) => {
         // credit
         message += `\n\nData from <a href="${alert_source_url}">${alert_source_name}</a>`;
         telegramData.push(message);
+
+        // add feed
+        feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
       }
     }
 
@@ -146,7 +190,7 @@ exports.handler = async (event, context, callback) => {
       });
 
       // show whale alert link when has only one alert transaction
-      message += transactionsSorted.length === 1 ? transactionsSorted.map(x => `\n${alert_website_url}/transaction/${x.blockchain}/${x.key}`) : '';
+      message += transactionsSorted.length === 1 ? transactionsSorted.map(x => `\n${x.tx_url}`) : '';
 
       // add hashtag when has alert transaction not more than 2 transactions
       message += transactionsSorted.length > 2 ? '' : `\n\n${_.uniq(transactionsSorted.map(x => `${x.blockchain ? `#${capitalize(x.blockchain)}` : ''}`).concat(transactionsSorted.flatMap(x => [x.from_address_name && x.from_address_name.indexOf(' ') < 0 && x.from_address_name.toLowerCase().indexOf('unknown') < 0 ? `#${capitalize(x.from_address_name)}` : '', x.to_address_name && x.to_address_name.indexOf(' ') < 0 && x.to_address_name.toLowerCase().indexOf('unknown') < 0 ? `#${capitalize(x.to_address_name)}` : '']))).filter(x => x).join(' ')}`;
@@ -171,6 +215,23 @@ exports.handler = async (event, context, callback) => {
     } catch (error) {}
   }
 
+  // save feeds data to dynamodb
+  if (feedsData.length > 0) {
+    for (let i = 0; i < feedsData.length; i++) {
+      const feedData = feedsData[i];
+
+      try {
+        await axios.post(
+          dynamodb_api_host, {
+            table_name: dynamodb_table_name,
+            method: 'put',
+            ...feedData,
+          }
+        ).catch(error => error);
+      } catch (error) {}
+    }
+  }
+
   // return data
   return {
     telegram: {
@@ -178,6 +239,9 @@ exports.handler = async (event, context, callback) => {
     },
     twitter: {
       data: twitterData,
-    }
+    },
+    feeds: {
+      data: feedsData,
+    },
   };
 };

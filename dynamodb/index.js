@@ -50,6 +50,14 @@ exports.handler = async (event, context, callback) => {
     return item;
   };
 
+  // query records
+  const query = params => new Promise(resolve => {
+    db.query(params, (err, data) => {
+      if (err) resolve(null);
+      else resolve(data.Items);
+    });
+  });
+
   // scan records
   const scan = params => new Promise(resolve => {
     db.scan(params, (err, data) => {
@@ -100,11 +108,16 @@ exports.handler = async (event, context, callback) => {
 
     const _body = { ...body };
 
+    // remove path
+    if (body.path === '') {
+      delete body.path;
+    }
+
     // set table name
     const table_name = _body.table_name;
     delete body.table_name;
     // set method
-    const method = _body.method; // scan, get, put, update, delete
+    const method = _body.method; // query, scan, get, put, update, delete
     delete body.method;
     // set limit
     const limit = _body.limit || 25;
@@ -113,11 +126,14 @@ exports.handler = async (event, context, callback) => {
     const order = _body.order || 'asc';
     delete body.order;
     // set projection expression
-    const projection = _body.projection || 'id, CreatedAt, UpdatedAt, FeedType, Message, Json';
+    const projection = _body.projection || 'ID, SortKey, CreatedAt, UpdatedAt, FeedType, Message, Json';
     delete body.projection;
     // set filter expression
     const filter = _body.filter;
     delete body.filter;
+    // set filter expression
+    const attr_names = _body.attr_names;
+    delete body.attr_names;
     // set key expression
     const key = _body.key;
     delete body.key;
@@ -131,14 +147,33 @@ exports.handler = async (event, context, callback) => {
     };
 
     if (table_name === 'coinhippo-feeds' && method === 'put' && body.id) {
-      body.id = `${current_timestamp}_${body.id}`;
+      body.ID = 'feeds';
+      body.SortKey = `${current_timestamp}_${body.id}`;
+      delete body.id;
     }
 
     // do action
     switch(method) {
-      case 'scan':
+      case 'query':
         params.Limit = limit;
         params.ScanIndexForward = order === 'asc';
+        params.ProjectionExpression = projection;
+        if (key) {
+          params.KeyConditionExpression = key;
+        }
+        if (filter) {
+          params.FilterExpression = filter;
+        }
+        if (attr_names) {
+          try {
+            params.ExpressionAttributeNames = JSON.parse(attr_names);
+          } catch (error) {}
+        }
+        params.ExpressionAttributeValues = normalizeObject({ ...body });
+        response = { data: await query(params) };
+        break;
+      case 'scan':
+        params.Limit = limit;
         params.ProjectionExpression = projection;
         if (filter) {
           params.FilterExpression = filter;
@@ -177,7 +212,7 @@ exports.handler = async (event, context, callback) => {
     let params = {
       TableName: table_name,
       Limit: 50,
-      ProjectionExpression: 'id',
+      ProjectionExpression: 'ID, SortKey, CreatedAt',
       FilterExpression: 'CreatedAt < :time',
       ExpressionAttributeValues: {
         ':time': moment().subtract(1, 'days').unix().toString(),
@@ -196,7 +231,8 @@ exports.handler = async (event, context, callback) => {
       for (let i = 0; i < data.length; i++) {
         try {
           params.Key = {
-            id: { S: data[i].id.S },
+            ID: { S: data[i].ID.S },
+            SortKey: { S: data[i].SortKey.S },
           };
 
           await deleteItem(params);

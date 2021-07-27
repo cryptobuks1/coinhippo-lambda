@@ -106,9 +106,12 @@ exports.handler = async (event, context, callback) => {
     // set method
     const method = _body.method; // scan, get, put, update, delete
     delete body.method;
-    // set max items
-    const max_items = _body.max_items || 25;
-    delete body.max_items;
+    // set limit
+    const limit = _body.limit || 25;
+    delete body.limit;
+    // set order
+    const order = _body.order || 'asc';
+    delete body.order;
     // set projection expression
     const projection = _body.projection || 'id, CreatedAt, UpdatedAt, FeedType, Message, Json';
     delete body.projection;
@@ -131,25 +134,15 @@ exports.handler = async (event, context, callback) => {
       body.id = `${current_timestamp}_${body.id}`;
     }
 
-    // set scan params
-    if (method === 'scan') {
-      params.MaxItems = max_items;
-      params.ProjectionExpression = projection;
-      if (filter) {
-        params.FilterExpression = filter;
-      }
-    }
-    // set update params
-    else if (method === 'update') {
-      params.Key = normalizeObject({ ...key });
-      if (update) {
-        params.UpdateExpression = update;
-      }
-    }
-
     // do action
     switch(method) {
       case 'scan':
+        params.Limit = limit;
+        params.ScanIndexForward = order === 'asc';
+        params.ProjectionExpression = projection;
+        if (filter) {
+          params.FilterExpression = filter;
+        }
         params.ExpressionAttributeValues = normalizeObject({ ...body });
         response = { data: await scan(params) };
         break;
@@ -162,6 +155,10 @@ exports.handler = async (event, context, callback) => {
         response = { data: await put(params) };
         break;
       case 'update':
+        params.Key = normalizeObject({ ...key });
+        if (update) {
+          params.UpdateExpression = update;
+        }
         params.ExpressionAttributeValues = normalizeObject({ ...body, UpdatedAt: current_timestamp });
         response = { data: await update(params) };
         break;
@@ -179,7 +176,7 @@ exports.handler = async (event, context, callback) => {
 
     let params = {
       TableName: table_name,
-      MaxItems: 50,
+      Limit: 50,
       ProjectionExpression: 'id',
       FilterExpression: 'CreatedAt < :time',
       ExpressionAttributeValues: {

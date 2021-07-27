@@ -17,8 +17,9 @@ exports.handler = async (event, context, callback) => {
   // aws dynamodb
   const db = new AWS.DynamoDB();
 
-  // normalize item for dynamodb validatation
-  const normalizeObject = item => {
+  // normalize item for dynamodb validation
+  // input
+  const normalizeInputObject = item => {
     Object.keys(item).forEach(i => {
       try {
         if (i !== 'Json') {
@@ -50,11 +51,35 @@ exports.handler = async (event, context, callback) => {
     return item;
   };
 
+  // output
+  const normalizeOutputObject = item => {
+    Object.keys(item).forEach(i => {
+      try {
+        if (typeof item[i] === 'object' && Object.keys(item[i]).length === 1) {
+          Object.keys(item[i]).forEach(j => {
+            try {
+              if (typeof item[i][j] !== 'object') {
+                if (j === 'S') {
+                  item[i] = item[i][j].toString();
+                }
+                else if (j === 'N') {
+                  item[i] = Number(item[i][j]);
+                }
+              }
+            } catch (error) {}
+          });
+        }
+      } catch (error) {}
+    });
+
+    return item;
+  };
+
   // query records
   const query = params => new Promise(resolve => {
     db.query(params, (err, data) => {
       if (err) resolve(null);
-      else resolve(data.Items);
+      else resolve(data.Items && data.Items.map(item => normalizeOutputObject(item)));
     });
   });
 
@@ -62,7 +87,7 @@ exports.handler = async (event, context, callback) => {
   const scan = params => new Promise(resolve => {
     db.scan(params, (err, data) => {
       if (err) resolve(null);
-      else resolve(data.Items);
+      else resolve(data.Items && data.Items.map(item => normalizeOutputObject(item)));
     });
   });
 
@@ -169,7 +194,7 @@ exports.handler = async (event, context, callback) => {
             params.ExpressionAttributeNames = JSON.parse(attr_names);
           } catch (error) {}
         }
-        params.ExpressionAttributeValues = normalizeObject({ ...body });
+        params.ExpressionAttributeValues = normalizeInputObject({ ...body });
         response = { data: await query(params) };
         break;
       case 'scan':
@@ -178,27 +203,27 @@ exports.handler = async (event, context, callback) => {
         if (filter) {
           params.FilterExpression = filter;
         }
-        params.ExpressionAttributeValues = normalizeObject({ ...body });
+        params.ExpressionAttributeValues = normalizeInputObject({ ...body });
         response = { data: await scan(params) };
         break;
       case 'get':
-        params.Key = normalizeObject({ ...body });
+        params.Key = normalizeInputObject({ ...body });
         response = { data: await get(params) };
         break;
       case 'put':
-        params.Item = normalizeObject({ ...body, CreatedAt: current_timestamp, UpdatedAt: current_timestamp });
+        params.Item = normalizeInputObject({ ...body, CreatedAt: current_timestamp, UpdatedAt: current_timestamp });
         response = { data: await put(params) };
         break;
       case 'update':
-        params.Key = normalizeObject({ ...key });
+        params.Key = normalizeInputObject({ ...key });
         if (update) {
           params.UpdateExpression = update;
         }
-        params.ExpressionAttributeValues = normalizeObject({ ...body, UpdatedAt: current_timestamp });
+        params.ExpressionAttributeValues = normalizeInputObject({ ...body, UpdatedAt: current_timestamp });
         response = { data: await update(params) };
         break;
       case 'delete':
-        params.Key = normalizeObject({ ...body });
+        params.Key = normalizeInputObject({ ...body });
         response = { data: await deleteItem(params) };
         break;
       default:

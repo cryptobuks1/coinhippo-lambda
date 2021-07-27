@@ -76,8 +76,10 @@ exports.handler = async (event, context, callback) => {
     // add message
     telegramData.push(message);
 
+    const data = { ...gasData, avgGas, gas_gwei_threshold, url: gas_source_url, source_name: gas_source_name };
+
     // add feed
-    feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(gasData) });
+    feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
   }
 
   // post data to social poster

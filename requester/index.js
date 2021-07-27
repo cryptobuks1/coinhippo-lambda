@@ -33,6 +33,10 @@ exports.handler = async (event, context, callback) => {
       api_host: process.env.WHALE_ALERT_API_HOST || 'https://api.whale-alert.io/v1/',
       api_key: process.env.WHALE_ALERT_API_KEY || '{YOUR_WHALE_ALERT_API_KEY}',
     },
+    feeds: {
+      api_host: process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}',
+      table_name: process.env.DYNAMODB_FEEDS_TABLE_NAME || '{YOUR_DYNAMODB_FEEDS_TABLE_NAME}',
+    },
   };
 
   // response data variable
@@ -130,6 +134,17 @@ exports.handler = async (event, context, callback) => {
         res = await requester.get(path, { params })
           // set response data from error handled by exception
           .catch(error => { return { data: { error } }; });
+        break;
+      case 'feeds':
+        // normalize path parameter
+        path = path || '';
+        // setup query string parameters including API key
+        params = { table_name: env[apiName].table_name, ...event.queryStringParameters };
+
+        // send request
+        res = await requester.get(path, { params })
+          // set response data from error handled by exception
+          .catch(error => { return { data: { data: null, error } }; });
         break;
       default: // do nothing
     }

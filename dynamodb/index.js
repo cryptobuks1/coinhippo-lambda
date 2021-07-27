@@ -93,7 +93,7 @@ exports.handler = async (event, context, callback) => {
   // response data variable
   let response = null;
 
-  const body = event.body && JSON.parse(event.body);
+  const body = (event.body && JSON.parse(event.body)) || event.queryStringParameters;
 
   if (body && body.table_name) {
     const current_timestamp = moment().unix();
@@ -126,6 +126,10 @@ exports.handler = async (event, context, callback) => {
     const params = {
       TableName: table_name,
     };
+
+    if (table_name === 'coinhippo-feeds' && method === 'put' && body.id) {
+      body.id = `${current_timestamp}_${body.id}`;
+    }
 
     // set scan params
     if (method === 'scan') {
@@ -179,7 +183,7 @@ exports.handler = async (event, context, callback) => {
       ProjectionExpression: 'id',
       FilterExpression: 'CreatedAt < :time',
       ExpressionAttributeValues: {
-        ':time': moment().subtract(2, 'days').unix().toString(),
+        ':time': moment().subtract(1, 'days').unix().toString(),
       },
     };
 

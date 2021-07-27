@@ -17,8 +17,8 @@ exports.handler = async (event, context, callback) => {
   // aws dynamodb
   const db = new AWS.DynamoDB();
 
-  // normalize item for dynamodb validation
-  // input
+  // normalize item
+  // input for dynamodb validation
   const normalizeInputObject = item => {
     Object.keys(item).forEach(i => {
       try {
@@ -51,7 +51,7 @@ exports.handler = async (event, context, callback) => {
     return item;
   };
 
-  // output
+  // output for client
   const normalizeOutputObject = item => {
     Object.keys(item).forEach(i => {
       try {

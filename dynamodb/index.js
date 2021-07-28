@@ -16,6 +16,7 @@ exports.handler = async (event, context, callback) => {
   });
   // aws dynamodb
   const db = new AWS.DynamoDB();
+  const dc = new AWS.DynamoDB.DocumentClient();
 
   // normalize item
   // input for dynamodb validation
@@ -117,7 +118,7 @@ exports.handler = async (event, context, callback) => {
 
   // delete record
   const deleteItem = params => new Promise(resolve => {
-    db.delete(params, (err, data) => {
+    dc.delete(params, (err, data) => {
       if (err) resolve(null);
       else resolve(data);
     });
@@ -223,7 +224,7 @@ exports.handler = async (event, context, callback) => {
         response = { data: await update(params) };
         break;
       case 'delete':
-        params.Key = normalizeInputObject({ ...body });
+        params.Key = { ...body };
         response = { data: await deleteItem(params) };
         break;
       default:
@@ -256,8 +257,8 @@ exports.handler = async (event, context, callback) => {
       for (let i = 0; i < data.length; i++) {
         try {
           params.Key = {
-            ID: { S: data[i].ID.S },
-            SortKey: { S: data[i].SortKey.S },
+            ID: data[i].ID,
+            SortKey: data[i].SortKey,
           };
 
           await deleteItem(params);

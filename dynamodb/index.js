@@ -240,14 +240,14 @@ exports.handler = async (event, context, callback) => {
       ProjectionExpression: 'ID, SortKey, CreatedAt',
       FilterExpression: 'CreatedAt < :time',
       ExpressionAttributeValues: {
-        ':time': moment().subtract(1, 'days').unix().toString(),
+        ':time': { N: moment().subtract(1, 'days').unix().toString() },
       },
     };
 
     response = { data: await scan(params) };
 
     if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-      const data = response.data;
+      const { data } = { ...response };
 
       params = {
         TableName: table_name,

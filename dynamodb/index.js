@@ -237,7 +237,7 @@ exports.handler = async (event, context, callback) => {
 
     let params = {
       TableName: table_name,
-      Limit: 50,
+      Limit: 100,
       ProjectionExpression: 'ID, SortKey, CreatedAt',
       FilterExpression: 'CreatedAt < :time',
       ExpressionAttributeValues: {

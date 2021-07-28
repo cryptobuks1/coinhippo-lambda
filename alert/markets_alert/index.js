@@ -323,7 +323,7 @@ exports.handler = async (event, context, callback) => {
 
     if (telegramData.length > 0) {
       // coins url
-      const message = `See more on <b><a href="${website_url}${isDefiShow ? '/coins/defi' : isNFTsShow ? '/coins/nfts' : ''}">${app_name}</a></b>.`;
+      const message = `See more on <b><a href="${website_url}${isDefiShow ? '/coins/defi' : isNFTsShow ? '/coins/non-fungible-tokens-nft' : ''}">${app_name}</a></b>.`;
 
       // add message
       if (message) {
@@ -424,7 +424,7 @@ exports.handler = async (event, context, callback) => {
         });
         if (second % 3 === 2) {
           // coins url
-          message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins/nfts`;
+          message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins/non-fungible-tokens-nft`;
 
           // add hashtag
           message += `\n\n#NFT ${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;

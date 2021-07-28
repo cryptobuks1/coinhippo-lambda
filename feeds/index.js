@@ -107,6 +107,7 @@ exports.handler = async (event, context, callback) => {
   // request trending
   path = '/search/trending';
   params = null;
+  response = await request(path, params);
   let trendingData = response && response.coins && response.coins.filter(c => filter_out_ids.indexOf(c.id) < 0);
   if (trendingData && trendingData.length > 0) {
   	path = '/coins/markets';

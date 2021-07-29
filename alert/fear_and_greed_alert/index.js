@@ -68,15 +68,15 @@ exports.handler = async (event, context, callback) => {
       const data = { ...fearAndGreedData[0], low_threshold, high_threshold, url: source_url, source_name };
       const value = Number(data.value);
 
-      if (value <= low_threshold || value >= high_threshold) {
-        const message = `Today's <b>Bitcoin Fear and Greed index</b> is <b>${value}</b> - <b>${data.value_classification}</b> ${value <= low_threshold ? '😰' : '🤩'}\n\nData from <a href="${source_url}">${source_name}</a>`;
+      // if (value <= low_threshold || value >= high_threshold) {
+        const message = `Today's <b>Bitcoin Fear and Greed index</b> is <b>${value}</b> - <b>${data.value_classification}</b>${value <= low_threshold ? ' 😰' : value >= high_threshold ? ' 🤩' : ''}\n\nData from <a href="${source_url}">${source_name}</a>`;
 
         // add message
         telegramData.push(message);
 
         // add feed
         feedsData.push({ id: `${dynamodb_feeds_type}_${data.timestamp}`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
-      }
+      // }
     }
   }
 

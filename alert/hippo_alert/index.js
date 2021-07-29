@@ -48,8 +48,12 @@ exports.handler = async (event, context, callback) => {
   // function for capitalize word or phrase
   const capitalize = s => typeof s !== 'string' ? '' : s.trim().split(' ').join('_').split('-').join('_').split('_').map(x => x.trim()).filter(x => x).map(x => `${ignore_case_words.indexOf(x.toLowerCase()) > -1 ? x.substr(0, 1).toLowerCase() : x.substr(0, 1).toUpperCase()}${x.substr(1)}`).join(' ');
 
-  // function for generate repeat whale emoticon from amount
-  const repeatEmoticon = (emoticon, amount, data) => [...Array(amount < (data.transaction_type !== 'transfer' ? 1.5 : data.is_donation || data.is_hacked ? 1 : 5) * min_amount ? 1 : amount < (data.transaction_type !== 'transfer' ? 3 : data.is_donation || data.is_hacked ? 2 : 10) * min_amount ? 2 : amount < (data.transaction_type !== 'transfer' ? 10 : data.is_donation || data.is_hacked ? 5 : 50) * min_amount ? 3 : 4).keys()].map(i => emoticon).join('');
+  // function for generate repeat whale icon from amount
+  const repeatIcon = data => {
+    const amount = data.amount_usd;
+    const icon = data.transaction_type === 'mint' ? '🖨' : data.transaction_type === 'burn' ? '🔥' : data.transaction_type === 'lock' ? '🔐' : data.transaction_type === 'unlock' ? '🔓' : data.is_donation ? '🎁' : data.is_hacked ? '🥷' : amount <= 5 * min_amount ? '🐬' : amount <= 10 * min_amount ? '🦈' : amount <= 50 * min_amount ? '🐋' : '🐳';
+    return [...Array(amount <= (data.transaction_type !== 'transfer' ? 1.5 : data.is_donation || data.is_hacked ? 1 : 5) * min_amount ? 1 : amount <= (data.transaction_type !== 'transfer' ? 3 : data.is_donation || data.is_hacked ? 2 : 10) * min_amount ? 2 : amount <= (data.transaction_type !== 'transfer' ? 10 : data.is_donation || data.is_hacked ? 5 : 50) * min_amount ? 3 : 4).keys()].map(i => icon).join('');
+  };
 
   // initial requester object
   const requester = axios.create({ baseURL: api_host });
@@ -161,7 +165,7 @@ exports.handler = async (event, context, callback) => {
         data.push({ ...x, from_url, to_url });
 
         // transaction message
-        message += `${repeatEmoticon(x.transaction_type === 'mint' ? '🖨' : x.transaction_type === 'burn' ? '🔥' : x.transaction_type === 'lock' ? '🔐' : x.transaction_type === 'unlock' ? '🔓' : x.is_donation ? '🎁' : x.is_hacked ? '🥷' : x.amount_usd < 5 * min_amount ? '🐬' : x.amount_usd < 10 * min_amount ? '🦈' : x.amount_usd < 50 * min_amount ? '🐳' : '🐋', x.amount_usd, x)} <b><a href="${x.tx_url}">${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'}</a></b>: ${numeral(x.amount).format('0,0')} <b>${x.symbol.toUpperCase()}</b> (${currency_symbol}${numeral(x.amount_usd).format('0,0')}) ${x.transaction_type === 'mint' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : x.transaction_type === 'burn' ? `at <b>${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}</b>` : x.transaction_type === 'lock' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : x.transaction_type === 'unlock' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : `<b>${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}</b> ➡️ <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>`}`;
+        message += `${repeatIcon(x)} <b><a href="${x.tx_url}">${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'}</a></b>: ${numeral(x.amount).format('0,0')} <b>${x.symbol.toUpperCase()}</b> (${currency_symbol}${numeral(x.amount_usd).format('0,0')}) ${x.transaction_type === 'mint' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : x.transaction_type === 'burn' ? `at <b>${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}</b>` : x.transaction_type === 'lock' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : x.transaction_type === 'unlock' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : `<b>${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}</b> ➡️ <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>`}`;
       });
 
       // add message
@@ -171,7 +175,7 @@ exports.handler = async (event, context, callback) => {
         telegramData.push(message);
 
         // add feed
-        feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
+        feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(_.slice(data, 0, 3)) });
       }
     }
 
@@ -186,7 +190,7 @@ exports.handler = async (event, context, callback) => {
         message += `${i === 0 ? `Recent whale${transactionsSorted.length > 1 ? `s'` : `'s`} activit${transactionsSorted.length > 1 ? 'ies' : 'y'} you should be notified.` : ''}\n`;
 
         // transaction message
-        message += `${i > 0 ? '\n' : ''}- ${repeatEmoticon(x.transaction_type === 'mint' ? '🖨' : x.transaction_type === 'burn' ? '🔥' : x.transaction_type === 'lock' ? '🔐' : x.transaction_type === 'unlock' ? '🔓' : x.is_donation ? '🎁' : x.is_hacked ? '🥷' : x.amount_usd < 5 * min_amount ? '🐬' : x.amount_usd < 10 * min_amount ? '🦈' : x.amount_usd < 50 * min_amount ? '🐳' : '🐋', x.amount_usd, x)} ${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'}: ${numeral(x.amount).format('0,0')} $${x.symbol.toUpperCase()} (${currency_symbol}${numeral(x.amount_usd).format('0,0')}) ${x.transaction_type === 'mint' ? `at ${x.to_address_name}` : x.transaction_type === 'burn' ? `at ${x.from_address_name}` : x.transaction_type === 'lock' ? `at ${x.to_address_name}` : x.transaction_type === 'unlock' ? `at ${x.to_address_name}` : `${x.from_address_name} ➡️ ${x.to_address_name}`}`;
+        message += `${i > 0 ? '\n' : ''}- ${repeatIcon(x)} ${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'}: ${numeral(x.amount).format('0,0')} $${x.symbol.toUpperCase()} (${currency_symbol}${numeral(x.amount_usd).format('0,0')}) ${x.transaction_type === 'mint' ? `at ${x.to_address_name}` : x.transaction_type === 'burn' ? `at ${x.from_address_name}` : x.transaction_type === 'lock' ? `at ${x.to_address_name}` : x.transaction_type === 'unlock' ? `at ${x.to_address_name}` : `${x.from_address_name} ➡️ ${x.to_address_name}`}`;
       });
 
       // show whale alert link when has only one alert transaction

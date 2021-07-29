@@ -250,7 +250,7 @@ exports.handler = async (event, context, callback) => {
       }
     }
 
-    if (Number(moment().seconds()) % 3 < 2 && trendingDataSorted && trendingDataSorted.length > 0) {
+    if (Number(moment().seconds()) % 3 < 1 && trendingDataSorted && trendingDataSorted.length > 0) {
       let message = '';
       const data =_.slice(trendingDataSorted, 0, 3);
 

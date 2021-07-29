@@ -324,7 +324,7 @@ exports.handler = async (event, context, callback) => {
 
     if (telegramData.length > 0) {
       // coins url
-      const message = `See more on <b><a href="${website_url}${isDefiShow ? '/coins/defi' : isNFTsShow ? '/coins/non-fungible-tokens-nft' : ''}">${app_name}</a></b>.`;
+      const message = `See more on <a href="${website_url}${isDefiShow ? '/coins/defi' : isNFTsShow ? '/coins/non-fungible-tokens-nft' : ''}">${app_name}</a>`;
 
       // add message
       if (message) {

@@ -229,9 +229,9 @@ exports.handler = async (event, context, callback) => {
     let isDefiShow = false;
     let isNFTsShow = false;
 
-    const randNumber = Math.floor(Math.random() * 5);
+    const randNumber = Math.floor(Math.random() * 9);
 
-    if (randNumber < 2) {
+    if (randNumber < 3) {
       if (marketCapDataSorted && marketCapDataSorted.length > 0) {
         let message = '';
         const data = _.slice(marketCapDataSorted.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
@@ -253,7 +253,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 3) {
+    else if (randNumber < 6) {
       if (trendingDataSorted && trendingDataSorted.length > 0) {
         let message = '';
         const data =_.slice(trendingDataSorted, 0, 3);
@@ -275,7 +275,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 4) {
+    else if (randNumber < 7) {
       if (defiDataSorted && defiDataSorted.length > 0) {
         isDefiShow = true;
 
@@ -336,9 +336,9 @@ exports.handler = async (event, context, callback) => {
   }
 
   if (!hasAllTime && Number(moment().minutes()) === 0 && Number(moment().hours()) % 4 === 2) {
-    const randNumber = Math.floor(Math.random() * 5);
+    const randNumber = Math.floor(Math.random() * 9);
 
-    if (randNumber < 2) {
+    if (randNumber < 3) {
       if (marketCapDataSorted && marketCapDataSorted.length > 0) {
         let message = '';
         const data = _.slice(marketCapDataSorted.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
@@ -362,7 +362,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 3) {
+    else if (randNumber < 6) {
       if (trendingDataSorted && trendingDataSorted.length > 0) {
         let message = '';
         const data = _.slice(trendingDataSorted, 0, 3);
@@ -386,7 +386,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 4) {
+    else if (randNumber < 7) {
       if (defiDataSorted && defiDataSorted.length > 0) {
         let message = '';
         const data = _.slice(defiDataSorted, 0, 3);

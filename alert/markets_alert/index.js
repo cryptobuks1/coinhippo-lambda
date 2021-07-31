@@ -225,99 +225,101 @@ exports.handler = async (event, context, callback) => {
     }
   }
 
-  if (true || !hasAllTime) {
+  if (!hasAllTime) {
     let isDefiShow = false;
     let isNFTsShow = false;
 
-    if (marketCapDataSorted && marketCapDataSorted.length > 0) {
-      let message = '';
-      const data = _.slice(marketCapDataSorted.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
+    const randNumber = Math.floor(Math.random() * 5);
 
-      data.forEach((c, i) => {
-        // title
-        message += `${i === 0 ? '🧐 <b>Top % Change on High Market Cap Coins</b>' : ''}\n`;
+    if (randNumber < 2) {
+      if (marketCapDataSorted && marketCapDataSorted.length > 0) {
+        let message = '';
+        const data = _.slice(marketCapDataSorted.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
 
-        // coin message
-        message += `<b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a></b> (${c.name}) ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
-      });
+        data.forEach((c, i) => {
+          // title
+          message += `${i === 0 ? '🧐 <b>Top % Change on High Market Cap Coins</b>' : ''}\n`;
 
-      // add message
-      if (message) {
-        telegramData.push(message);
+          // coin message
+          message += `<b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a></b> (${c.name}) ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
+        });
 
-        // add feed
-        feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_marketcap`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
-      }
-    }
+        // add message
+        if (message) {
+          telegramData.push(message);
 
-    if (Number(moment().seconds()) % 3 < 1 && trendingDataSorted && trendingDataSorted.length > 0) {
-      let message = '';
-      const data =_.slice(trendingDataSorted, 0, 3);
-
-      data.forEach((c, i) => {
-        // title
-        message += `${i === 0 ? '🤔 <b>Trending Now</b>' : ''}\n`;
-
-        // coin message
-        message += `<b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a></b> (${c.name}) ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
-      });
-
-      // add message
-      if (message) {
-        telegramData.push(message);
-
-        // add feed
-        feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_trending`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
-      }
-    }
-
-    if (telegramData.length < 2) {
-      if (Number(moment().milliseconds()) % 2 === 0) {
-        if (defiDataSorted && defiDataSorted.length > 0) {
-          isDefiShow = true;
-
-          let message = '';
-          const data = _.slice(defiDataSorted, 0, 3);
-
-          data.forEach((c, i) => {
-            // title
-            message += `${i === 0 ? '🦄 <b>Top DeFi</b>' : ''}\n`;
-
-            // coin message
-            message += `<b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a></b> (${c.name}) ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
-          });
-
-          // add message
-          if (message) {
-            telegramData.push(message);
-
-            // add feed
-            feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_defi`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
-          }
+          // add feed
+          feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_marketcap`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
         }
       }
-      else {
-        if (nftsDataSorted && nftsDataSorted.length > 0) {
-          isNFTsShow = true;
+    }
+    else if (randNumber < 3) {
+      if (trendingDataSorted && trendingDataSorted.length > 0) {
+        let message = '';
+        const data =_.slice(trendingDataSorted, 0, 3);
 
-          let message = '';
-          const data = _.slice(nftsDataSorted, 0, 3);
+        data.forEach((c, i) => {
+          // title
+          message += `${i === 0 ? '🤔 <b>Trending Now</b>' : ''}\n`;
 
-          data.forEach((c, i) => {
-            // title
-            message += `${i === 0 ? '🌠 <b>Top NFTs</b>' : ''}\n`;
+          // coin message
+          message += `<b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a></b> (${c.name}) ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
+        });
 
-            // coin message
-            message += `<b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a></b> (${c.name}) ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
-          });
+        // add message
+        if (message) {
+          telegramData.push(message);
 
-          // add message
-          if (message) {
-            telegramData.push(message);
+          // add feed
+          feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_trending`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
+        }
+      }
+    }
+    else if (randNumber < 4) {
+      if (defiDataSorted && defiDataSorted.length > 0) {
+        isDefiShow = true;
 
-            // add feed
-            feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_nfts`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
-          }
+        let message = '';
+        const data = _.slice(defiDataSorted, 0, 3);
+
+        data.forEach((c, i) => {
+          // title
+          message += `${i === 0 ? '🦄 <b>Top DeFi</b>' : ''}\n`;
+
+          // coin message
+          message += `<b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a></b> (${c.name}) ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
+        });
+
+        // add message
+        if (message) {
+          telegramData.push(message);
+
+          // add feed
+          feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_defi`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
+        }
+      }
+    }
+    else {
+      if (nftsDataSorted && nftsDataSorted.length > 0) {
+        isNFTsShow = true;
+
+        let message = '';
+        const data = _.slice(nftsDataSorted, 0, 3);
+
+        data.forEach((c, i) => {
+          // title
+          message += `${i === 0 ? '🌠 <b>Top NFTs</b>' : ''}\n`;
+
+          // coin message
+          message += `<b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a></b> (${c.name}) ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
+        });
+
+        // add message
+        if (message) {
+          telegramData.push(message);
+
+          // add feed
+          feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}_nfts`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
         }
       }
     }
@@ -333,21 +335,21 @@ exports.handler = async (event, context, callback) => {
     }
   }
 
-  if (!hasAllTime && Number(moment().hours()) % 4 === 2) {
-    const second = Number(moment().seconds());
+  if (!hasAllTime && Number(moment().minutes()) === 0 && Number(moment().hours()) % 4 === 2) {
+    const randNumber = Math.floor(Math.random() * 5);
 
-    if (marketCapDataSorted && marketCapDataSorted.length > 0) {
-      let message = '';
-      const data = _.slice(marketCapDataSorted.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
-      data.forEach((c, i) => {
-        // title
-        message += `${i === 0 ? `Let's check on the top${data.length > 1 ? ` ${data.length}` : '%'} changes on the High Market Cap Coins 🧐` : ''}\n`;
+    if (randNumber < 2) {
+      if (marketCapDataSorted && marketCapDataSorted.length > 0) {
+        let message = '';
+        const data = _.slice(marketCapDataSorted.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
+        data.forEach((c, i) => {
+          // title
+          message += `${i === 0 ? `Let's check on the top${data.length > 1 ? ` ${data.length}` : '%'} changes on the High Market Cap Coins 🧐` : ''}\n`;
 
-        // coin message
-        message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
-      });
+          // coin message
+          message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
+        });
 
-      if (second % 3 === 0) {
         // coins url
         message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins`;
 
@@ -360,16 +362,15 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
+    else if (randNumber < 3) {
+      if (trendingDataSorted && trendingDataSorted.length > 0) {
+        let message = '';
+        const data = _.slice(trendingDataSorted, 0, 3);
+        data.forEach((c, i) => {
+          // coins message
+          message += `${i === 0 ? '' : i === data.length - 1 ? ' and ' : ', '}${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name}`;
+        });
 
-    if (trendingDataSorted && trendingDataSorted.length > 0) {
-      let message = '';
-      const data = _.slice(trendingDataSorted, 0, 3);
-      data.forEach((c, i) => {
-        // coins message
-        message += `${i === 0 ? '' : i === data.length - 1 ? ' and ' : ', '}${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name}`;
-      });
-
-      if (second % 3 === 1) {
         // message
         message += ` are trending now. Let's check'em out! 🔥🔥🔥`;
 
@@ -385,8 +386,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-
-    if (Number(moment().milliseconds()) % 2 === 0) {
+    else if (randNumber < 4) {
       if (defiDataSorted && defiDataSorted.length > 0) {
         let message = '';
         const data = _.slice(defiDataSorted, 0, 3);
@@ -398,17 +398,15 @@ exports.handler = async (event, context, callback) => {
           message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
         });
 
-        if (second % 3 === 2) {
-          // coins url
-          message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins/defi`;
+        // coins url
+        message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins/defi`;
 
-          // add hashtag
-          message += `\n\n#DeFi ${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;
+        // add hashtag
+        message += `\n\n#DeFi ${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;
 
-          // add message
-          if (message) {
-            twitterData.push({ text: message, data });
-          }
+        // add message
+        if (message) {
+          twitterData.push({ text: message, data });
         }
       }
     }
@@ -423,17 +421,15 @@ exports.handler = async (event, context, callback) => {
           // coin message
           message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
         });
-        if (second % 3 === 2) {
-          // coins url
-          message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins/non-fungible-tokens-nft`;
+        // coins url
+        message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins/non-fungible-tokens-nft`;
 
-          // add hashtag
-          message += `\n\n#NFT ${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;
+        // add hashtag
+        message += `\n\n#NFT ${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;
 
-          // add message
-          if (message) {
-            twitterData.push({ text: message, data });
-          }
+        // add message
+        if (message) {
+          twitterData.push({ text: message, data });
         }
       }
     }
@@ -495,7 +491,7 @@ exports.handler = async (event, context, callback) => {
     }
   }
 
-  if (!marketStatus && Number(moment().hours()) % 4 === 0 && marketCapDataSorted.findIndex(c => c.id === 'bitcoin') > -1) {
+  if (!marketStatus && Number(moment().minutes()) === 0 && Number(moment().hours()) % 4 === 0 && marketCapDataSorted.findIndex(c => c.id === 'bitcoin') > -1) {
     const c = marketCapDataSorted[marketCapDataSorted.findIndex(c => c.id === 'bitcoin')];
     const telegramMessage = `Today's ${c.name} (<b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a></b>) price ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
 

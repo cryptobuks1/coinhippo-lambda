@@ -238,7 +238,7 @@ exports.handler = async (event, context, callback) => {
 
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? '🧐 <b>Top % Change on High Market Cap Coins</b>' : ''}\n`;
+          message += `${i === 0 ? '🧐 <b>High % Change</b>' : ''}\n`;
 
           // coin message
           message += `<b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a></b> (${c.name}) ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${c.price_change_percentage_24h_in_currency > 0 ? '🔼' : c.price_change_percentage_24h_in_currency < 0 ? '🔻' : '--'} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;

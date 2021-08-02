@@ -16,8 +16,8 @@ exports.handler = async (event, context, callback) => {
     if (typeof number === 'number') {
       number = number.toString();
     }
-    if (number === 'NaN') {
-      return '<0.00000001';
+    if (number.includes('NaN')) {
+      return number.replace('NaN', '<0.00000001');
     }
     if (typeof number === 'string') {
       if (number.indexOf('.') > -1) {

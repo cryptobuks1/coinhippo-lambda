@@ -62,7 +62,7 @@ exports.handler = async (event, context, callback) => {
 
     // initial page
     const page = await browser.newPage();
-    await page.setViewport({ width: 1440, height: 900 });
+    await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 3 });
 
     for (let i = 0; i < twitterData.length; i++) {
       try {

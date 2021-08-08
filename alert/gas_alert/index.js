@@ -71,7 +71,7 @@ exports.handler = async (event, context, callback) => {
 
   // process gas data
   if (gasData && avgGas <= gas_gwei_threshold) {
-    const message =`The <b>⛽ ETH Gas</b> is ${avgGas <= gas_gwei_threshold * 2 / 3 ? 'very low' : 'not high'}. Maybe it's time to <b><a href="${website_url}/coins/decentralized-finance-defi">DeFi</a></b> or <b><a href="${website_url}/coins/non-fungible-tokens-nft">NFTs</a></b>. 😁👍\nLow: <b>${gasData.SafeGasPrice}</b> Gwei\nAverage: <b>${gasData.ProposeGasPrice}</b> Gwei\nHigh: <b>${gasData.FastGasPrice}</b> Gwei\n\nData from <a href="${gas_source_url}">${gas_source_name}</a>`;
+    const message =`The ⛽ ETH Gas is ${avgGas <= gas_gwei_threshold * 2 / 3 ? 'very low' : 'not high'}.\nMaybe it's time to <a href="${website_url}/coins/decentralized-finance-defi">DeFi</a> or <a href="${website_url}/coins/non-fungible-tokens-nft">NFTs</a>. 😁👍\n<pre>Low: ${gasData.SafeGasPrice} Gwei</pre>\n<pre>Average: ${gasData.ProposeGasPrice} Gwei</pre>\n<pre>High: ${gasData.FastGasPrice} Gwei</pre>`;
 
     // add message
     telegramData.push(message);

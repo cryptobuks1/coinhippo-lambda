@@ -13,7 +13,7 @@ exports.handler = async (event, context, callback) => {
 
   // output data
   const telegramData = [];
-  const twitterData = [];
+  let twitterData = [];
   const feedsData = [];
 
   // constant
@@ -155,7 +155,7 @@ exports.handler = async (event, context, callback) => {
       // select top 5 and sort by timestamp
       _.orderBy(_.slice(transactionsSorted, 0, 5), ['timestamp'], ['asc']).forEach((x, i) => {
         // title
-        message += `${i === 0 ? '🚨 <b>Hippo Alert</b>' : ''}\n`;
+        message += `${i === 0 ? '' : '\n\n'}`;
 
         // explorer url
         const index = blockchains.findIndex(c => (blockchains.findIndex(_c => _c.chain === x.blockchain) > -1 && c.keywords && c.keywords.findIndex(k => x.from_address_name.toLowerCase().indexOf(k) > -1 || x.to_address_name.toLowerCase().indexOf(k) > -1) > -1) || (c.chain === x.blockchain && blockchains.findIndex(_c => _c.chain !== c.chain && _c.keywords && _c.keywords.findIndex(k => x.from_address_name.toLowerCase().indexOf(k) > -1 || x.to_address_name.toLowerCase().indexOf(k) > -1) > -1) < 0));
@@ -165,13 +165,11 @@ exports.handler = async (event, context, callback) => {
         data.push({ ...x, from_url, to_url });
 
         // transaction message
-        message += `${repeatIcon(x)} <b><a href="${x.tx_url}">${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'}</a></b>: ${numeral(x.amount).format('0,0')} <b>${x.symbol.toUpperCase()}</b> (${currency_symbol}${numeral(x.amount_usd).format('0,0')}) ${x.transaction_type === 'mint' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : x.transaction_type === 'burn' ? `at <b>${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}</b>` : x.transaction_type === 'lock' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : x.transaction_type === 'unlock' ? `at <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>` : `<b>${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}</b> ➡️ <b>${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}</b>`}`;
+        message += `${repeatIcon(x)} <a href="${x.tx_url}">${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'}</a>: <b>${numeral(x.amount).format('0,0')} ${x.symbol.toUpperCase()}</b> <pre>${currency_symbol}${numeral(x.amount_usd).format('0,0')}</pre>\n${x.transaction_type === 'mint' ? `at ${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}` : x.transaction_type === 'burn' ? `at ${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''}` : x.transaction_type === 'lock' ? `at ${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}` : x.transaction_type === 'unlock' ? `at ${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}` : `${from_url ? `<a href="${from_url}">` : ''}${x.from_address_name}${from_url ? '</a>' : ''} ➡️ ${to_url ? `<a href="${to_url}">` : ''}${x.to_address_name}${to_url ? '</a>' : ''}`}`;
       });
 
       // add message
       if (message) {
-        // credit
-        message += `\n\nData from <a href="${alert_source_url}">${alert_source_name}</a>`;
         telegramData.push(message);
 
         // add feed
@@ -190,7 +188,7 @@ exports.handler = async (event, context, callback) => {
         message += `${i === 0 ? `Recent whale${transactionsSorted.length > 1 ? `s'` : `'s`} activit${transactionsSorted.length > 1 ? 'ies' : 'y'} you should be notified.` : ''}\n`;
 
         // transaction message
-        message += `${i > 0 ? '\n' : ''}- ${repeatIcon(x)} ${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'}: ${numeral(x.amount).format('0,0')} $${x.symbol.toUpperCase()} (${currency_symbol}${numeral(x.amount_usd).format('0,0')}) ${x.transaction_type === 'mint' ? `at ${x.to_address_name}` : x.transaction_type === 'burn' ? `at ${x.from_address_name}` : x.transaction_type === 'lock' ? `at ${x.to_address_name}` : x.transaction_type === 'unlock' ? `at ${x.to_address_name}` : `${x.from_address_name} ➡️ ${x.to_address_name}`}`;
+        message += `${i > 0 ? '\n' : ''}- ${repeatIcon(x)} ${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'} ${numeral(x.amount).format('0,0')} $${x.symbol.toUpperCase()} (${currency_symbol}${numeral(x.amount_usd).format('0,0')})\n${x.transaction_type === 'mint' ? `at ${x.to_address_name}` : x.transaction_type === 'burn' ? `at ${x.from_address_name}` : x.transaction_type === 'lock' ? `at ${x.to_address_name}` : x.transaction_type === 'unlock' ? `at ${x.to_address_name}` : `${x.from_address_name} ➡️ ${x.to_address_name}`}`;
       });
 
       // show whale alert link when has only one alert transaction
@@ -204,7 +202,10 @@ exports.handler = async (event, context, callback) => {
         twitterData.push({
           text: message,
           data: transactionsSorted.map(x => {
-            return { ...x, widget_url: `${website_url}/widget/hippo-alert?theme=${x.transaction_type !== 'transfer' || x.is_donation || x.is_hacked ? 'dark' : 'light'}${Object.keys(x).filter(key => key !== 'value').map(key => `&${key}=${encodeURIComponent(x[key])}`).join('')}` };
+            return {
+              ...x,
+              // widget_url: `${website_url}/widget/hippo-alert?theme=${x.transaction_type !== 'transfer' || x.is_donation || x.is_hacked ? 'dark' : 'light'}${Object.keys(x).filter(key => key !== 'value').map(key => `&${key}=${encodeURIComponent(x[key])}`).join('')}`
+            };
           }),
         });
       }
@@ -217,24 +218,38 @@ exports.handler = async (event, context, callback) => {
       const feedData = feedsData[i];
 
       try {
-        await axios.post(
+        const saveResponse = await axios.post(
           dynamodb_api_host, {
             table_name: dynamodb_table_name,
             method: 'put',
             ...feedData,
           }
         ).catch(error => error);
+
+        if (saveResponse.data && saveResponse.data.SortKey && twitterData) {
+          twitterData = twitterData.map(_twitterData => {
+            return {
+              ..._twitterData,
+              data: _twitterData.data && _twitterData.data.map(x => {
+                return {
+                  ...x,
+                  widget_url: `http://v2.coinhippo.io.s3-website-us-east-1.amazonaws.com/feeds?view=widget&theme=${x.transaction_type !== 'transfer' || x.is_donation || x.is_hacked ? 'dark' : 'light'}&id=${saveResponse.data.SortKey}&tx=${x.key}`//`${website_url}/feeds?view=widget&theme=${x.transaction_type !== 'transfer' || x.is_donation || x.is_hacked ? 'dark' : 'light'}&id=${saveResponse.data.SortKey}&tx=${x.key}`
+                };
+              })
+            };
+          });
+        }
       } catch (error) {}
     }
   }
 
   // post data to social poster
-  // if (telegramData.length > 0 || twitterData.length > 0) {
-  //   try {
-  //     await axios.post(poster_api_host, { telegram: telegramData, twitter: twitterData })
-  //       .catch(error => error);
-  //   } catch (error) {}
-  // }
+  if (telegramData.length > 0 || twitterData.length > 0) {
+    try {
+      await axios.post(poster_api_host, { telegram: telegramData, twitter: twitterData })
+        .catch(error => error);
+    } catch (error) {}
+  }
 
   // return data
   return {

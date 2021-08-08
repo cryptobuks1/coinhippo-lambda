@@ -110,7 +110,7 @@ exports.handler = async (event, context, callback) => {
     newsData.forEach(d => {
       d.url = d.url.replace(d.slug, 'click/');
 
-      const message =`${d.kind === 'media' ? d.domain && d.domain.indexOf('youtube') > -1 ? '📺' : '🎙' : '📰'} ${d.title}\n\nvia <a href="${d.url}">${d.source.title}</a>`;
+      const message =`${d.kind === 'media' ? d.domain && d.domain.indexOf('youtube') > -1 ? '📺' : '🎙' : '📰'} ${d.title} via <a href="${d.url}">${d.source.title}</a>`;
 
       // add message
       telegramData.push(message);

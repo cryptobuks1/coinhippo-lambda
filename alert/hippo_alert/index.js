@@ -25,8 +25,6 @@ exports.handler = async (event, context, callback) => {
   const website_url = process.env.WEBSITE_URL || 'https://coinhippo.io';
   const explorer_url = process.env.EXPLORER_URL || 'https://explorers.coinhippo.io';
   const alert_website_url = process.env.ALERT_WEBSITE_URL || 'https://whale-alert.io';
-  const alert_source_url = process.env.ALERT_SOURCE_URL || 'https://twitter.com/whale_alert';
-  const alert_source_name = process.env.ALERT_SOURCE_NAME || 'Whale Alert';
   const currency_symbol = '$';
   const donation_keywords = ['charity','donation','donate'];
   const hacked_keywords = ['hack'];

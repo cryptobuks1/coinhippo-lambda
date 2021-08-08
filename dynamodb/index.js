@@ -209,7 +209,7 @@ exports.handler = async (event, context, callback) => {
         break;
       case 'get':
         params.Key = normalizeInputObject({ ...body });
-        response = { data: await get(params) };
+        response = { data: normalizeOutputObject(await get(params)) };
         break;
       case 'put':
         params.Item = normalizeInputObject({ ...body, CreatedAt: current_timestamp, UpdatedAt: current_timestamp });

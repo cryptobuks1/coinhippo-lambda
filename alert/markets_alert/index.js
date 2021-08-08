@@ -521,26 +521,19 @@ exports.handler = async (event, context, callback) => {
 
   // normalize twitter data for social poster
   if (twitterData && twitterData.length > 0) {
-  	twitterData = twitterData.map(_twitterData => {
-  		return {
-  			// add hashtag
-  			text: `${_twitterData.text}${_twitterData.text.endsWith(' ') ? `#Crypto #Cryptocurrency ${_twitterData.text.indexOf('#Bitcoin') < 0 ? ' #Altcoin #Bitcoin' : ''} #CryptoNews` : ''}`,
-  			// add widget url
-  			data: _twitterData.data && _twitterData.data.map(c => {
-  				return { ...c, widget_url: `${website_url}/widget/coin/${c.id}?theme=dark${_twitterData.extra ? `&extra=${_twitterData.extra}` : ''}` };
-  			}),
-  		};
-  	});
+    twitterData = twitterData.map(_twitterData => {
+      return {
+        // add hashtag
+        text: `${_twitterData.text}${_twitterData.text.endsWith(' ') ? `#Crypto #Cryptocurrency ${_twitterData.text.indexOf('#Bitcoin') < 0 ? ' #Altcoin #Bitcoin' : ''} #CryptoNews` : ''}`,
+        // add widget url
+        data: _twitterData.data && _twitterData.data.map((c, i) => {
+          // return { ...c, widget_url: `${website_url}/widget/coin/${c.id}?theme=dark${_twitterData.extra ? `&extra=${_twitterData.extra}` : ''}` };
+          return { ...c, widget_url: `${website_url}/widget/coin/${c.id}?theme=dark${_twitterData.extra ? `&extra=${_twitterData.extra}` : ''}` };
+        }),
+      };
+    });
   }
-
-  // post data to social poster
-  if (telegramData.length > 0 || twitterData.length > 0) {
-    try {
-      await axios.post(poster_api_host, { telegram: telegramData, twitter: twitterData })
-        .catch(error => error);
-    } catch (error) {}
-  }
-
+const x = []
   // save feeds data to dynamodb
   if (feedsData.length > 0) {
     feedsData = _.reverse(feedsData);
@@ -548,19 +541,28 @@ exports.handler = async (event, context, callback) => {
       const feedData = feedsData[i];
 
       try {
-        await axios.post(
+        const y = await axios.post(
           dynamodb_api_host, {
             table_name: dynamodb_table_name,
             method: 'put',
             ...feedData,
           }
         ).catch(error => error);
+x.push(y.data)
       } catch (error) {}
     }
   }
 
+  // post data to social poster
+  // if (telegramData.length > 0 || twitterData.length > 0) {
+  //   try {
+  //     await axios.post(poster_api_host, { telegram: telegramData, twitter: twitterData })
+  //       .catch(error => error);
+  //   } catch (error) {}
+  // }
+
   // return data
-  return {
+  return x /*{
     telegram: {
       data: telegramData,
     },
@@ -570,5 +572,5 @@ exports.handler = async (event, context, callback) => {
     feeds: {
       data: feedsData,
     },
-  };
+  };*/
 };

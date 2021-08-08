@@ -82,14 +82,14 @@ exports.handler = async (event, context, callback) => {
     // request news
     params.filter = filters[i];
     response = await request(path, params);
-	  
-	  // merge news data
-	  newsData = _.orderBy(_.uniqBy(newsData.concat(response && response.results ? response.results : []), 'id'), ['created_at'], ['desc']);
+    
+    // merge news data
+    newsData = _.orderBy(_.uniqBy(newsData.concat(response && response.results ? response.results : []), 'id'), ['created_at'], ['desc']);
   }
 
   // process news data
   if (newsData && newsData.length > 0) {
-  	// get latest news id from aws s3
+    // get latest news id from aws s3
     const latestId = await new Promise(resolve => s3.getObject({
       Bucket: aws_s3_bucket,
       Key: aws_s3_bucket_key
@@ -121,7 +121,7 @@ exports.handler = async (event, context, callback) => {
 
     // save latest news id to aws s3
     if (newsData[0] && newsData[0].id) {
-    	await new Promise(resolve => s3.putObject({
+      await new Promise(resolve => s3.putObject({
         Bucket: aws_s3_bucket,
         Key: aws_s3_bucket_key,
         Body: newsData[0].id.toString(),

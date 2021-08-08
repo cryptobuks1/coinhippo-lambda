@@ -3,7 +3,7 @@
  * Deploy on AWS Lambda (using AWS Lambda@Edge)
  ************************************************/
  exports.handler = async (event, context, callback) => {
- 	// import module for submitting request.
+   // import module for submitting request.
   const axios = require('axios');
 
   // import modules
@@ -59,7 +59,7 @@
 
   // function for generate header meta tags
   const getPathHeaderMeta = (path, data) => {
-  	// normalize path
+    // normalize path
     path = !path ? '/' : path.toLowerCase();
     path = path.startsWith('/widget/') ? path.substring('/widget'.length) : path;
 
@@ -238,29 +238,29 @@
     else {
       const pathSplit = path.toLowerCase().split('/').filter(x => x);
 
-		  // initial path parameter
-		  let path = null;
+      // initial path parameter
+      let path = null;
 
-		  // initial params parameter
-		  let params = null;
+      // initial params parameter
+      let params = null;
 
-		  // get data
+      // get data
       let data = null;
       if (pathSplit[0] === 'coin' && pathSplit[1]) {
-      	path = `/coins/${pathSplit[1]}`;
-			  params = { localization: false, tickers: false, market_data: false, community_data: false, developer_data: false };
-			  data = await coingeckoRequest(path, params);
-			}
+        path = `/coins/${pathSplit[1]}`;
+        params = { localization: false, tickers: false, market_data: false, community_data: false, developer_data: false };
+        data = await coingeckoRequest(path, params);
+      }
       else if (pathSplit[0] === 'exchange' && pathSplit[1]) {
-      	path = `/exchanges/${pathSplit[1]}`;
+        path = `/exchanges/${pathSplit[1]}`;
         params = {};
         data = await coingeckoRequest(path, params);
-			}
+      }
       else if (pathSplit[0] === 'blog' && pathSplit[1]) {
-      	path = `${aws_s3_url}/${aws_s3_bucket}/blog/${pathSplit[1]}/${pathSplit[2] ? `posts/${pathSplit[2]}/` : ''}data.json`;
+        path = `${aws_s3_url}/${aws_s3_bucket}/blog/${pathSplit[1]}/${pathSplit[2] ? `posts/${pathSplit[2]}/` : ''}data.json`;
         params = {};
         const res = await axios.get(path, { params: { ...(params || {}) } })
-        	.catch(error => { return { data: { error } }; });
+          .catch(error => { return { data: { error } }; });
         if (res && res.data && !res.data.error) {
           data = res.data;
         }
@@ -341,7 +341,7 @@
     }
   }
   else {
-  	// return
+    // return
     callback(null, request);
   }
 };

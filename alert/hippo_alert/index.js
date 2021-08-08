@@ -211,14 +211,6 @@ exports.handler = async (event, context, callback) => {
     }
   }
 
-  // post data to social poster
-  if (telegramData.length > 0 || twitterData.length > 0) {
-    try {
-      await axios.post(poster_api_host, { telegram: telegramData, twitter: twitterData })
-        .catch(error => error);
-    } catch (error) {}
-  }
-
   // save feeds data to dynamodb
   if (feedsData.length > 0) {
     for (let i = 0; i < feedsData.length; i++) {
@@ -235,6 +227,14 @@ exports.handler = async (event, context, callback) => {
       } catch (error) {}
     }
   }
+
+  // post data to social poster
+  // if (telegramData.length > 0 || twitterData.length > 0) {
+  //   try {
+  //     await axios.post(poster_api_host, { telegram: telegramData, twitter: twitterData })
+  //       .catch(error => error);
+  //   } catch (error) {}
+  // }
 
   // return data
   return {

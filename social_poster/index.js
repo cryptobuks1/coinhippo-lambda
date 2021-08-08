@@ -73,22 +73,24 @@ exports.handler = async (event, context, callback) => {
         const mediaIds = [];
 
         for (let j = 0; j < data.length; j++) {
-          // go to page
-          await page.goto(data[j].widget_url);
-          await page.waitForTimeout(12500);
+          if (data[j].widget_url) {
+            // go to page
+            await page.goto(data[j].widget_url);
+            await page.waitForTimeout(12500);
 
-          // screenshot base64 data
-          const media = await page.screenshot({ clip: { x: 520, y: 274, width: 400, height: 348 }, encoding: 'base64' });
+            // screenshot base64 data
+            const media = await page.screenshot({ clip: { x: 520, y: 274, width: 400, height: 348 }, encoding: 'base64' });
 
-          // upload media to twitter
-          const response = await twitterClient.media.mediaUpload({ media_data: media, media_type: 'image/png' });
+            // upload media to twitter
+            const response = await twitterClient.media.mediaUpload({ media_data: media, media_type: 'image/png' });
 
-          // get media id
-          if (response && response.media_id_string) {
-            const media_id = response.media_id_string;
-            mediaIds.push(media_id);
-          
-            twitterData[i].data[j] = { ...twitterData[i].data[j], media_id };
+            // get media id
+            if (response && response.media_id_string) {
+              const media_id = response.media_id_string;
+              mediaIds.push(media_id);
+            
+              twitterData[i].data[j] = { ...twitterData[i].data[j], media_id };
+            }
           }
         }
 

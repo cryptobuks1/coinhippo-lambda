@@ -155,13 +155,13 @@ exports.handler = async (event, context, callback) => {
       const highPrice = c.high_price;
 
       // title
-      telegramMessage += `${i === 0 ? '🔥 ALL TIME HIGH' : ''}\n`;
+      telegramMessage += `${i === 0 ? '🛸🌙 ALL TIME HIGH' : ''}\n`;
 
       // coin message
       telegramMessage += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <pre>${currency_symbol}${numberOptimizeDecimal(numeral(highPrice).format(`0,0${highPrice >= 100 ? '' : highPrice >= 1 ? '.00' : '.00000000'}`))}</pre>`;
 
       // coin message
-      twitterMessage += `${i > 0 ? '\n' : ''}${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} hits a new ATH at ${currency_symbol}${numberOptimizeDecimal(numeral(highPrice).format(`0,0${highPrice >= 100 ? '' : highPrice >= 1 ? '.00' : '.00000000'}`))}. 🚀`;
+      twitterMessage += `${i > 0 ? '\n' : ''}${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} hits a new ATH at ${currency_symbol}${numberOptimizeDecimal(numeral(highPrice).format(`0,0${highPrice >= 100 ? '' : highPrice >= 1 ? '.00' : '.00000000'}`))}. 🚀🌙`;
     });
 
     const id = `${dynamodb_feeds_type}_${moment().unix()}_ath`;
@@ -197,13 +197,13 @@ exports.handler = async (event, context, callback) => {
       const lowPrice = c.low_price;
 
       // title
-      telegramMessage += `${i === 0 ? '‼️ ALL TIME LOW' : ''}\n`;
+      telegramMessage += `${i === 0 ? '🚨 ALL TIME LOW' : ''}\n`;
 
       // coin message
       telegramMessage += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <pre>${currency_symbol}${numberOptimizeDecimal(numeral(lowPrice).format(`0,0${lowPrice >= 100 ? '' : lowPrice >= 1 ? '.00' : '.00000000'}`))}</pre>`;
 
       // coin message
-      twitterMessage += `${i > 0 ? '\n' : ''}${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} made a new ATL at ${currency_symbol}${numberOptimizeDecimal(numeral(lowPrice).format(`0,0${lowPrice >= 100 ? '' : lowPrice >= 1 ? '.00' : '.00000000'}`))}. 🤕`;
+      twitterMessage += `${i > 0 ? '\n' : ''}${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} made a new ATL at ${currency_symbol}${numberOptimizeDecimal(numeral(lowPrice).format(`0,0${lowPrice >= 100 ? '' : lowPrice >= 1 ? '.00' : '.00000000'}`))}. 😢🚨`;
     });
 
     const id = `${dynamodb_feeds_type}_${moment().unix()}_atl`;
@@ -242,7 +242,7 @@ exports.handler = async (event, context, callback) => {
 
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `<a href="${website_url}/coins">🧐 High % Change</a>` : ''}\n`;
+          message += `${i === 0 ? `<a href="${website_url}/coins">🌪 High % Change</a>` : ''}\n`;
 
           // coin message
           message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
@@ -264,7 +264,7 @@ exports.handler = async (event, context, callback) => {
         const data = _.slice(marketCapDataSorted.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `Let's check on the top${data.length > 1 ? ` ${data.length}` : ''} % changes 🧐` : ''}\n`;
+          message += `${i === 0 ? `Let's check on the top${data.length > 1 ? ` ${data.length}` : ''} % changes 🌊` : ''}\n`;
 
           // coin message
           message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
@@ -274,7 +274,7 @@ exports.handler = async (event, context, callback) => {
         message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins`;
 
         // add hashtag
-        message += `\n\n❤️ if you HODL any one of them\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;
+        message += `\n\n💙 if you HODL any one of them\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;
 
         // add message
         if (message) {
@@ -291,7 +291,7 @@ exports.handler = async (event, context, callback) => {
 
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `<a href="${website_url}">🤔 Trending Now</a>` : ''}\n`;
+          message += `${i === 0 ? `<a href="${website_url}">🔥🔎 Trending Now</a>` : ''}\n`;
 
           // coin message
           message += `<b>${c.name}</b> <a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : ''}</a>\n${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
@@ -340,7 +340,7 @@ exports.handler = async (event, context, callback) => {
 
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `<a href="${website_url}/coins/decentralized-finance-defi">🦄 Top DeFi</a>` : ''}\n`;
+          message += `${i === 0 ? `<a href="${website_url}/coins/decentralized-finance-defi">🦄🥞🍣 Top DeFi</a>` : ''}\n`;
 
           // coin message
           message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
@@ -362,7 +362,7 @@ exports.handler = async (event, context, callback) => {
         const data = _.slice(defiDataSorted, 0, 3);
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `🦄 Update on the top${data.length > 1 ? ` ${data.length}` : ''} DeFi from their last 24h prices:` : ''}\n`;
+          message += `${i === 0 ? `🦄🥞🍣 Update on the top${data.length > 1 ? ` ${data.length}` : ''} DeFi from their last 24h prices:` : ''}\n`;
 
           // coin message
           message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
@@ -389,7 +389,7 @@ exports.handler = async (event, context, callback) => {
 
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `<a href="${website_url}/coins/non-fungible-tokens-nft">🌠 Top NFTs</a>` : ''}\n`;
+          message += `${i === 0 ? `<a href="${website_url}/coins/non-fungible-tokens-nft">🎑👻🎮 Top NFTs</a>` : ''}\n`;
 
           // coin message
           message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
@@ -411,7 +411,7 @@ exports.handler = async (event, context, callback) => {
         const data = _.slice(nftsDataSorted, 0, 3);
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `🌠 Update on the top${data.length > 1 ? ` ${data.length}` : ''} NFTs from their last 24h prices:` : ''}\n`;
+          message += `${i === 0 ? `🎑👻🎮 Update on the top${data.length > 1 ? ` ${data.length}` : ''} NFTs from their last 24h prices:` : ''}\n`;
 
           // coin message
           message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
@@ -450,13 +450,13 @@ exports.handler = async (event, context, callback) => {
         let twitterMessage = '';
         coinsData.forEach((c, i) => {
           // title
-          telegramMessage += `${i === 0 ? `<a href="${website_url}">${marketStatus === 'panic' ? '😱 Panic Selling' : '🤩 FOMO Buying'}</a>` : ''}\n`;
+          telegramMessage += `${i === 0 ? `<a href="${website_url}">${marketStatus === 'panic' ? '😱🥶😰 Panic Selling' : '🤩🤑😁 FOMO Buying'}</a>` : ''}\n`;
 
           // coin message
           telegramMessage += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
 
           // title
-          twitterMessage += `${i === 0 ? `${marketStatus === 'panic' ? '😱 Some panic selling detected:' : '🤩 Some FOMO buying detected:'}` : ''}\n`;
+          twitterMessage += `${i === 0 ? `${marketStatus === 'panic' ? '😱🥶😰 Some Panic selling detected:' : '🤩🤑😁 Some FOMO buying detected:'}` : ''}\n`;
 
           // coin message
           twitterMessage += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;

@@ -69,7 +69,7 @@ exports.handler = async (event, context, callback) => {
       const value = Number(data.value);
 
       // if (value <= low_threshold || value >= high_threshold) {
-        const message = `Today's Bitcoin Fear & Greed Index is <pre>${value}</pre> - <u>${data.value_classification}</u>${value <= low_threshold ? ' 😰' : value >= high_threshold ? ' 🤩' : ''}`;
+        const message = `Today's Bitcoin Fear & Greed Index is <pre>${value}</pre> - <u>${data.value_classification}</u>${value <= low_threshold ? ' 🥶' : value >= high_threshold ? ' 🤩' : ''}`;
 
         // add message
         telegramData.push(message);

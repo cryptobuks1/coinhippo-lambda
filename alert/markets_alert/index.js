@@ -158,7 +158,7 @@ exports.handler = async (event, context, callback) => {
       telegramMessage += `${i === 0 ? '🔥 ALL TIME HIGH' : ''}\n`;
 
       // coin message
-      telegramMessage += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a> <pre>${currency_symbol}${numberOptimizeDecimal(numeral(highPrice).format(`0,0${highPrice >= 100 ? '' : highPrice >= 1 ? '.00' : '.00000000'}`))}</pre>`;
+      telegramMessage += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <pre>${currency_symbol}${numberOptimizeDecimal(numeral(highPrice).format(`0,0${highPrice >= 100 ? '' : highPrice >= 1 ? '.00' : '.00000000'}`))}</pre>`;
 
       // coin message
       twitterMessage += `${i > 0 ? '\n' : ''}${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} hits a new ATH at ${currency_symbol}${numberOptimizeDecimal(numeral(highPrice).format(`0,0${highPrice >= 100 ? '' : highPrice >= 1 ? '.00' : '.00000000'}`))}. 🚀`;
@@ -200,7 +200,7 @@ exports.handler = async (event, context, callback) => {
       telegramMessage += `${i === 0 ? '‼️ ALL TIME LOW' : ''}\n`;
 
       // coin message
-      telegramMessage += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a> <pre>${currency_symbol}${numberOptimizeDecimal(numeral(lowPrice).format(`0,0${lowPrice >= 100 ? '' : lowPrice >= 1 ? '.00' : '.00000000'}`))}</pre>`;
+      telegramMessage += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <pre>${currency_symbol}${numberOptimizeDecimal(numeral(lowPrice).format(`0,0${lowPrice >= 100 ? '' : lowPrice >= 1 ? '.00' : '.00000000'}`))}</pre>`;
 
       // coin message
       twitterMessage += `${i > 0 ? '\n' : ''}${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} made a new ATL at ${currency_symbol}${numberOptimizeDecimal(numeral(lowPrice).format(`0,0${lowPrice >= 100 ? '' : lowPrice >= 1 ? '.00' : '.00000000'}`))}. 🤕`;
@@ -242,10 +242,10 @@ exports.handler = async (event, context, callback) => {
 
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `🧐 <a href="${website_url}/coins">High % Change</a>` : ''}\n`;
+          message += `${i === 0 ? `<a href="${website_url}/coins">🧐 High % Change</a>` : ''}\n`;
 
           // coin message
-          message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
+          message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
         });
 
         id = `${dynamodb_feeds_type}_${moment().unix()}_marketcap`;
@@ -291,10 +291,10 @@ exports.handler = async (event, context, callback) => {
 
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `🤔 <a href="${website_url}">Trending Now</a>` : ''}\n`;
+          message += `${i === 0 ? `<a href="${website_url}">🤔 Trending Now</a>` : ''}\n`;
 
           // coin message
-          message += `<b>${c.name}</b><a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a>\n${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
+          message += `<b>${c.name}</b> <a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : ''}</a>\n${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
         });
 
         id = `${dynamodb_feeds_type}_${moment().unix()}_trending`;
@@ -340,10 +340,10 @@ exports.handler = async (event, context, callback) => {
 
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `🦄 <a href="${website_url}/coins/decentralized-finance-defi">Top DeFi</a>` : ''}\n`;
+          message += `${i === 0 ? `<a href="${website_url}/coins/decentralized-finance-defi">🦄 Top DeFi</a>` : ''}\n`;
 
           // coin message
-          message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
+          message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
         });
 
         id = `${dynamodb_feeds_type}_${moment().unix()}_defi`;
@@ -389,10 +389,10 @@ exports.handler = async (event, context, callback) => {
 
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `🌠 <a href="${website_url}/coins/non-fungible-tokens-nft">Top NFTs</a>` : ''}\n`;
+          message += `${i === 0 ? `<a href="${website_url}/coins/non-fungible-tokens-nft">🌠 Top NFTs</a>` : ''}\n`;
 
           // coin message
-          message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
+          message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
         });
 
         id = `${dynamodb_feeds_type}_${moment().unix()}_nfts`;
@@ -453,7 +453,7 @@ exports.handler = async (event, context, callback) => {
           telegramMessage += `${i === 0 ? `<a href="${website_url}">${marketStatus === 'panic' ? '😱 Panic Selling' : '🤩 FOMO Buying'}</a>` : ''}\n`;
 
           // coin message
-          telegramMessage += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
+          telegramMessage += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
 
           // title
           twitterMessage += `${i === 0 ? `${marketStatus === 'panic' ? '😱 Some panic selling detected:' : '🤩 Some FOMO buying detected:'}` : ''}\n`;
@@ -490,7 +490,7 @@ exports.handler = async (event, context, callback) => {
 
   if (!marketStatus && Number(moment().minutes()) === 0 && Number(moment().hours()) % 4 === 0 && marketCapDataSorted.findIndex(c => c.id === 'bitcoin') > -1) {
     const c = marketCapDataSorted[marketCapDataSorted.findIndex(c => c.id === 'bitcoin')];
-    const telegramMessage = `Today's <a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : 'See more'}</a> price <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
+    const telegramMessage = `Today's <a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> price <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
 
     const id = `${dynamodb_feeds_type}_${moment().unix()}_bitcoin`;
 

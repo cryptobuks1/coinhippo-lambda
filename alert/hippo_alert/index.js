@@ -176,7 +176,7 @@ exports.handler = async (event, context, callback) => {
     }
 
     // filter amount, select top 3 and sort by timestamp for alert on twitter
-    transactionsSorted = _.orderBy(_.slice(transactionsSorted.filter(x => x.value && x.amount_usd >= (x.transaction_type !== 'transfer' ? 2.5 : x.is_donation || x.is_hacked ? 0.5 : 5) * (x.from_address_name.toLowerCase() === x.to_address_name.toLowerCase() && huge_coins.indexOf(x.symbol) > -1 ? 2 : 1) * min_amount), 0, 3), ['timestamp'], ['asc']);
+    transactionsSorted = _.orderBy(_.slice(transactionsSorted.filter(x => x.value && x.amount_usd >= (x.transaction_type !== 'transfer' ? 4 : x.is_donation || x.is_hacked ? 0.5 : 5) * (x.from_address_name.toLowerCase() === x.to_address_name.toLowerCase() && huge_coins.indexOf(x.symbol) > -1 ? 2 : 1) * min_amount), 0, 3), ['timestamp'], ['asc']);
 
     if (transactionsSorted.length > 0) {
       let message = '';

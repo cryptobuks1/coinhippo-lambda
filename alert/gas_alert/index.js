@@ -90,7 +90,7 @@ exports.handler = async (event, context, callback) => {
     twitterData.push({
       id,
       text: twitterMessage,
-      data: [fearAndGreedData[0]].map(x => {
+      data: [gasData].map(x => {
         return {
           ...x,
         };

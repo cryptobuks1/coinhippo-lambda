@@ -8,6 +8,7 @@ exports.handler = async (event, context, callback) => {
 
   // output data
   const telegramData = [];
+  const twitterData = [];
   const feedsData = [];
 
   // constant
@@ -74,18 +75,25 @@ exports.handler = async (event, context, callback) => {
         // add message
         telegramData.push(message);
 
+        const id = `${dynamodb_feeds_type}_${data.timestamp}`;
+
         // add feed
-        feedsData.push({ id: `${dynamodb_feeds_type}_${data.timestamp}`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
+        feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
+
+        const twitterMessage = `Today's #Bitcoin Fear & Greed Index is ${value} - ${data.value_classification}${value <= low_threshold ? ' 🥶' : value >= high_threshold ? ' 🤩' : ''}\n\n#Crypto #Cryptocurrency`;
+
+        // add message and data
+        twitterData.push({
+          id,
+          text: twitterMessage,
+          data: [fearAndGreedData[0]].map(x => {
+            return {
+              ...x,
+            };
+          }),
+        });
       // }
     }
-  }
-
-  // post data to social poster
-  if (telegramData.length > 0) {
-    try {
-      await axios.post(poster_api_host, { telegram: telegramData })
-        .catch(error => error);
-    } catch (error) {}
   }
 
   // save feeds data to dynamodb
@@ -94,21 +102,40 @@ exports.handler = async (event, context, callback) => {
       const feedData = feedsData[i];
 
       try {
-        await axios.post(
+        const saveResponse = await axios.post(
           dynamodb_api_host, {
             table_name: dynamodb_table_name,
             method: 'put',
             ...feedData,
           }
         ).catch(error => error);
+
+        if (saveResponse.data && saveResponse.data.SortKey && feedData.id && twitterData && twitterData.findIndex(_twitterData => _twitterData.id === feedData.id) > -1) {
+          const _twitterData = twitterData[twitterData.findIndex(_twitterData => _twitterData.id === feedData.id)];
+          if (_twitterData.data[0]) {
+            _twitterData.data[0].widget_url = `http://v2.coinhippo.io.s3-website-us-east-1.amazonaws.com/feeds?view=widget&id=${saveResponse.data.SortKey}`//`${website_url}/feeds?view=widget&id=${saveResponse.data.SortKey}`;
+            twitterData[twitterData.findIndex(_twitterData => _twitterData.id === feedData.id)] = _twitterData;
+          }
+        }
       } catch (error) {}
     }
+  }
+
+  // post data to social poster
+  if (telegramData.length > 0 || twitterData.length > 0) {
+    try {
+      await axios.post(poster_api_host, { telegram: telegramData, twitter: twitterData })
+        .catch(error => error);
+    } catch (error) {}
   }
 
   // return data
   return {
     telegram: {
       data: telegramData,
+    },
+    twitter: {
+      data: twitterData,
     },
     feeds: {
       data: feedsData,

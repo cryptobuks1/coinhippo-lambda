@@ -12,6 +12,7 @@ exports.handler = async (event, context, callback) => {
 
   // output data
   const telegramData = [];
+  const twitterData = [];
   const feedsData = [];
 
   // constant
@@ -78,16 +79,23 @@ exports.handler = async (event, context, callback) => {
 
     const data = { ...gasData, avgGas, gas_gwei_threshold, url: gas_source_url, source_name: gas_source_name };
 
-    // add feed
-    feedsData.push({ id: `${dynamodb_feeds_type}_${moment().unix()}`, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
-  }
+    const id = `${dynamodb_feeds_type}_${moment().unix()}`;
 
-  // post data to social poster
-  if (telegramData.length > 0) {
-    try {
-      await axios.post(poster_api_host, { telegram: telegramData })
-        .catch(error => error);
-    } catch (error) {}
+    // add feed
+    feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
+
+    const twitterMessage = `The ⛽ ETH Gas is ${avgGas <= gas_gwei_threshold * 2 / 3 ? 'very low' : 'not high'}.\nMaybe it's time to #DeFi or #NFTs. 😁👍\nLow: ${gasData.SafeGasPrice} Gwei\nAverage: ${gasData.ProposeGasPrice} Gwei\nHigh: ${gasData.FastGasPrice} Gwei\n\n#Ethereum $ETH #Etherscan #Ether #Crypto #Cryptocurrency`;
+
+    // add message and data
+    twitterData.push({
+      id,
+      text: twitterMessage,
+      data: [fearAndGreedData[0]].map(x => {
+        return {
+          ...x,
+        };
+      }),
+    });
   }
 
   // save feeds data to dynamodb
@@ -96,21 +104,40 @@ exports.handler = async (event, context, callback) => {
       const feedData = feedsData[i];
 
       try {
-        await axios.post(
+        const saveResponse = await axios.post(
           dynamodb_api_host, {
             table_name: dynamodb_table_name,
             method: 'put',
             ...feedData,
           }
         ).catch(error => error);
+
+        if (saveResponse.data && saveResponse.data.SortKey && feedData.id && twitterData && twitterData.findIndex(_twitterData => _twitterData.id === feedData.id) > -1) {
+          const _twitterData = twitterData[twitterData.findIndex(_twitterData => _twitterData.id === feedData.id)];
+          if (_twitterData.data[0]) {
+            _twitterData.data[0].widget_url = `http://v2.coinhippo.io.s3-website-us-east-1.amazonaws.com/feeds?view=widget&theme=dark&id=${saveResponse.data.SortKey}`//`${website_url}/feeds?view=widget&theme=dark&id=${saveResponse.data.SortKey}`;
+            twitterData[twitterData.findIndex(_twitterData => _twitterData.id === feedData.id)] = _twitterData;
+          }
+        }
       } catch (error) {}
     }
+  }
+
+  // post data to social poster
+  if (telegramData.length > 0 || twitterData.length > 0) {
+    try {
+      await axios.post(poster_api_host, { telegram: telegramData, twitter: twitterData })
+        .catch(error => error);
+    } catch (error) {}
   }
 
   // return data
   return {
     telegram: {
       data: telegramData,
+    },
+    twitter: {
+      data: twitterData,
     },
     feeds: {
       data: feedsData,

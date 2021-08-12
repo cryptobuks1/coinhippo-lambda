@@ -231,7 +231,7 @@ exports.handler = async (event, context, callback) => {
               data: _twitterData.data && _twitterData.data.map(x => {
                 return {
                   ...x,
-                  widget_url: `http://v2.coinhippo.io.s3-website-us-east-1.amazonaws.com/feeds?view=widget&theme=${x.transaction_type !== 'transfer' || x.is_donation || x.is_hacked ? 'dark' : 'light'}&id=${saveResponse.data.SortKey}&tx=${x.key}`//`${website_url}/feeds?view=widget&theme=${x.transaction_type !== 'transfer' || x.is_donation || x.is_hacked ? 'dark' : 'light'}&id=${saveResponse.data.SortKey}&tx=${x.key}`
+                  widget_url: `${website_url}/feeds?view=widget&theme=${x.transaction_type !== 'transfer' || x.is_donation || x.is_hacked ? 'dark' : 'light'}&id=${saveResponse.data.SortKey}&tx=${x.key}`
                 };
               })
             };

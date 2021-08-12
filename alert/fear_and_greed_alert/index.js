@@ -113,7 +113,7 @@ exports.handler = async (event, context, callback) => {
         if (saveResponse.data && saveResponse.data.SortKey && feedData.id && twitterData && twitterData.findIndex(_twitterData => _twitterData.id === feedData.id) > -1) {
           const _twitterData = twitterData[twitterData.findIndex(_twitterData => _twitterData.id === feedData.id)];
           if (_twitterData.data[0]) {
-            _twitterData.data[0].widget_url = `http://v2.coinhippo.io.s3-website-us-east-1.amazonaws.com/feeds?view=widget&id=${saveResponse.data.SortKey}`//`${website_url}/feeds?view=widget&id=${saveResponse.data.SortKey}`;
+            _twitterData.data[0].widget_url = `${website_url}/feeds?view=widget&id=${saveResponse.data.SortKey}`;
             twitterData[twitterData.findIndex(_twitterData => _twitterData.id === feedData.id)] = _twitterData;
           }
         }

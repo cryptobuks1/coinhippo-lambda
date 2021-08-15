@@ -84,7 +84,7 @@ exports.handler = async (event, context, callback) => {
     // add feed
     feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
 
-    const twitterMessage = `The ⛽ ETH Gas is ${avgGas <= gas_gwei_threshold * 2 / 3 ? 'very low' : 'not high'}.\nMaybe it's time to #DeFi or #NFTs. 😁👍\nLow: ${gasData.SafeGasPrice} Gwei\nAverage: ${gasData.ProposeGasPrice} Gwei\nHigh: ${gasData.FastGasPrice} Gwei\n\n#Ethereum $ETH #Etherscan #Ether #Crypto #Cryptocurrency`;
+    const twitterMessage = `The ⛽ ETH Gas is ${avgGas <= gas_gwei_threshold * 2 / 3 ? 'very low' : 'not high'}.\nMaybe it's time to #DeFi or #NFTs. 😁👍\nLow: ${gasData.SafeGasPrice} Gwei\nAverage: ${gasData.ProposeGasPrice} Gwei\nHigh: ${gasData.FastGasPrice} Gwei\n\n #Etherscan #Ether #EtherGas #Ethereum #Crypto #Cryptocurrency`;
 
     // add message and data
     twitterData.push({
@@ -115,7 +115,7 @@ exports.handler = async (event, context, callback) => {
         if (saveResponse.data && saveResponse.data.SortKey && feedData.id && twitterData && twitterData.findIndex(_twitterData => _twitterData.id === feedData.id) > -1) {
           const _twitterData = twitterData[twitterData.findIndex(_twitterData => _twitterData.id === feedData.id)];
           if (_twitterData.data[0]) {
-            _twitterData.data[0].widget_url = `${website_url}/feeds?view=widget&theme=dark&id=${saveResponse.data.SortKey}`;
+            _twitterData.data[0].widget_url = `${website_url}/feeds?view=widget&id=${saveResponse.data.SortKey}`;
             twitterData[twitterData.findIndex(_twitterData => _twitterData.id === feedData.id)] = _twitterData;
           }
         }

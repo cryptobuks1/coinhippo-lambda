@@ -125,7 +125,7 @@ exports.handler = async (event, context, callback) => {
         tx_url = `https://bscscan.com/tx/${!(x.key.startsWith('0x')) ? '0x' : ''}${x.key}`;
       }
       else if (x.blockchain.toLowerCase() === 'ripple') {
-        tx_url = `https://xrpscan.com/ledger/${x.key}`;
+        tx_url = `https://xrpscan.com/tx/${x.key}`;
       }
       else if (x.blockchain.toLowerCase() === 'neo') {
         tx_url = `https://neoscan.io/transaction/${x.key}`;

@@ -23,7 +23,7 @@ exports.handler = async (event, context, callback) => {
   const dynamodb_table_name = process.env.DYNAMODB_TABLE_NAME || 'coinhippo-feeds';
   const dynamodb_feeds_type = 'whales';
   const website_url = process.env.WEBSITE_URL || 'https://coinhippo.io';
-  const explorer_url = process.env.EXPLORER_URL || 'https://explorers.coinhippo.io';
+  const explorer_url = process.env.EXPLORER_URL || 'https://coinhippo.io/wallet';
   const alert_website_url = process.env.ALERT_WEBSITE_URL || 'https://whale-alert.io';
   const currency_symbol = '$';
   const donation_keywords = ['charity','donation','donate'];
@@ -36,10 +36,10 @@ exports.handler = async (event, context, callback) => {
     { chain: 'matic', explorer_chain: 'matic-mainnet', keywords: ['matic', 'polygon'] },
     { chain: 'avalanche', explorer_chain: 'avalanche-mainnet' },
     { chain: 'fantom', explorer_chain: 'fantom-mainnet' },
-    { chain: 'rsk', explorer_chain: 'rsk-mainnet' },
-    { chain: 'arbitrum', explorer_chain: 'arbitrum-mainnet' },
     { chain: 'moonriver', explorer_chain: 'moonbeam-moonriver' },
-    { chain: 'moonbeam', explorer_chain: 'moonbeam-moonbase-alpha' },
+    // { chain: 'rsk', explorer_chain: 'rsk-mainnet' },
+    // { chain: 'arbitrum', explorer_chain: 'arbitrum-mainnet' },
+    // { chain: 'palm', explorer_chain: 'palm-mainnet' },
   ];
   const min_amount = 10000000;
 
@@ -157,8 +157,8 @@ exports.handler = async (event, context, callback) => {
 
         // explorer url
         const index = blockchains.findIndex(c => (blockchains.findIndex(_c => _c.chain === x.blockchain) > -1 && c.keywords && c.keywords.findIndex(k => x.from_address_name.toLowerCase().indexOf(k) > -1 || x.to_address_name.toLowerCase().indexOf(k) > -1) > -1) || (c.chain === x.blockchain && blockchains.findIndex(_c => _c.chain !== c.chain && _c.keywords && _c.keywords.findIndex(k => x.from_address_name.toLowerCase().indexOf(k) > -1 || x.to_address_name.toLowerCase().indexOf(k) > -1) > -1) < 0));
-        const from_url = index > -1 && x.from_addresses.length === 1 ? `${explorer_url}/${blockchains[index].explorer_chain}/address/0x${x.from_addresses[0]}` : '';
-        const to_url = index > -1 && x.to_addresses.length === 1 ? `${explorer_url}/${blockchains[index].explorer_chain}/address/0x${x.to_addresses[0]}` : '';
+        const from_url = index > -1 && x.from_addresses.length === 1 ? `${explorer_url}/${blockchains[index].explorer_chain}/0x${x.from_addresses[0]}` : '';
+        const to_url = index > -1 && x.to_addresses.length === 1 ? `${explorer_url}/${blockchains[index].explorer_chain}/0x${x.to_addresses[0]}` : '';
 
         data.push({ ...x, from_url, to_url });
 

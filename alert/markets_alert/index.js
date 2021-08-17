@@ -96,7 +96,7 @@ exports.handler = async (event, context, callback) => {
 
   // request coins
   path = '/coins/markets';
-  params = { vs_currency, order: 'market_cap_desc', per_page: 50, price_change_percentage: times.join(',') };
+  params = { vs_currency, order: 'market_cap_desc', per_page: 100, price_change_percentage: times.join(',') };
   response = await request(path, params);
   const marketCapData = response && !response.error && response.filter(c => filter_out_ids.indexOf(c.id) < 0);
 

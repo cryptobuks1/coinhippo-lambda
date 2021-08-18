@@ -33,6 +33,9 @@ exports.handler = async (event, context, callback) => {
       api_host: process.env.WHALE_ALERT_API_HOST || 'https://api.whale-alert.io/v1/',
       api_key: process.env.WHALE_ALERT_API_KEY || '{YOUR_WHALE_ALERT_API_KEY}',
     },
+    coinmarketcap: {
+      api_host: process.env.COINMARKETCAP_API_HOST || 'https://api.coinmarketcap.com/data-api/v3/',
+    },
     feeds: {
       api_host: process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}',
       table_name: process.env.DYNAMODB_FEEDS_TABLE_NAME || '{YOUR_DYNAMODB_FEEDS_TABLE_NAME}',
@@ -134,6 +137,17 @@ exports.handler = async (event, context, callback) => {
         res = await requester.get(path, { params })
           // set response data from error handled by exception
           .catch(error => { return { data: { error } }; });
+        break;
+      case 'coinmarketcap':
+        // normalize path parameter
+        path = path || '';
+        // setup query string parameters including limit
+        params = { ...event.queryStringParameters };
+
+        // send request
+        res = await requester.get(path, { params })
+          // set response data from error handled by exception
+          .catch(error => { return { data: { data: null, status: { error_message: error.message, error_code: error.code } } }; });
         break;
       case 'feeds':
         // normalize path parameter

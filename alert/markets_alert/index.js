@@ -85,6 +85,30 @@ exports.handler = async (event, context, callback) => {
     return response;
   };
 
+  // function to request data from coinmarketcap API on AWS by passing 2 arguments (path, params)
+  const requestCMC = async (path, params) => {
+    // response data variable
+    let response = null;
+
+    try {
+      // send request to your API
+      const res = await requester.get('', { params: { api_name: 'coinmarketcap', path, ...(params || {}) } })
+        // set response data from error handled by exception
+        .catch(error => { return { data: { data: null, status: { error_message: error.message, error_code: error.code } } }; });
+
+      // set response data
+      if (res && res.data) {
+        response = res.data;
+      }
+    } catch (error) {
+      // set response data from error handled by exception
+      response = { data: null, status: { error_message: error.message, error_code: error.code } };
+    }
+
+    // return response data
+    return response;
+  };
+
   // response data variable
   let response = null;
 
@@ -111,10 +135,36 @@ exports.handler = async (event, context, callback) => {
   const nftsData = response && !response.error && response.filter(c => filter_out_ids.indexOf(c.id) < 0);
 
   // request trending
-  path = '/search/trending';
-  params = null;
-  response = await request(path, params);
-  let trendingData = response && response.coins && response.coins.filter(c => filter_out_ids.indexOf(c.id) < 0);
+  const randSearch = Math.floor(Math.random() * 4);
+  let trendingData;
+  if (randSearch === 1) {
+    path = '/topsearch/rank';
+    params = null;
+    response = await requestCMC(path, params);
+    trendingData = response && response.data && response.data.cryptoTopSearchRanks && response.data.cryptoTopSearchRanks.map(c => {
+      return {
+        id: c.slug,
+        thumb: `https://s2.coinmarketcap.com/static/img/coins/64x64/${c.id}.png`,
+        symbol: c.symbol && c.symbol.toLowerCase(),
+        market_cap_rank: c.rank,
+        market_cap: c.marketCap,
+        current_price: c.priceChange && c.priceChange.price,
+        price_change_percentage_24h: c.priceChange && c.priceChange.priceChange24h,
+        price_change_percentage_24h_in_currency: c.priceChange && c.priceChange.priceChange24h,
+        price_change_percentage_7d: c.priceChange && c.priceChange.priceChange7d,
+        price_change_percentage_7d_in_currency: c.priceChange && c.priceChange.priceChange7d,
+        price_change_percentage_30d: c.priceChange && c.priceChange.priceChange30d,
+        price_change_percentage_30d_in_currency: c.priceChange && c.priceChange.priceChange30d,
+        total_volume: c.priceChange && c.priceChange.volume24h,
+      };
+    });
+  }
+  else {
+    path = '/search/trending';
+    params = null;
+    response = await request(path, params);
+    trendingData = response && response.coins && response.coins;
+  }
   if (trendingData && trendingData.length > 0) {
     path = '/coins/markets';
     params = { vs_currency, ids: trendingData.map(c => c.item && c.item.id).join(','), price_change_percentage: times.join(',') };
@@ -127,8 +177,11 @@ exports.handler = async (event, context, callback) => {
         if (coinIndex > -1) {
           d = { ...d, ...trendingCoinsData[coinIndex] };
         }
+        else {
+          d = null;
+        }
         return d;
-      });
+      }).filter(d => d);
     }
   }
 
@@ -297,7 +350,7 @@ exports.handler = async (event, context, callback) => {
           message += `<b>${c.name}</b> <a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : ''}</a>\n${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
         });
 
-        id = `${dynamodb_feeds_type}_${moment().unix()}_trending`;
+        id = `${dynamodb_feeds_type}_${moment().unix()}${randSearch === 1 ? '_cmc' : ''}_trending`;
 
         // add message
         if (message) {
@@ -323,7 +376,7 @@ exports.handler = async (event, context, callback) => {
         message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}`;
 
         // add hashtag
-        message += `\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;
+        message += `\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} #${randSearch === 1 ? 'CoinMarketCap' : 'CoinGecko'} `;
 
         // add message
         if (message) {

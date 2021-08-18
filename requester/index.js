@@ -35,6 +35,7 @@ exports.handler = async (event, context, callback) => {
     },
     coinmarketcap: {
       api_host: process.env.COINMARKETCAP_API_HOST || 'https://api.coinmarketcap.com/data-api/v3/',
+      api_key: process.env.COINMARKETCAP_API_KEY || '{YOUR_COINMARKETCAP_API_KEY}',
     },
     feeds: {
       api_host: process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}',

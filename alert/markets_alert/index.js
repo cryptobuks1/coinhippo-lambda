@@ -96,7 +96,7 @@ exports.handler = async (event, context, callback) => {
 
   // request coins
   path = '/coins/markets';
-  params = { vs_currency, order: 'market_cap_desc', per_page: 100, price_change_percentage: times.join(',') };
+  params = { vs_currency, order: 'market_cap_desc', per_page: 250, price_change_percentage: times.join(',') };
   response = await request(path, params);
   const marketCapData = response && !response.error && response.filter(c => filter_out_ids.indexOf(c.id) < 0);
 
@@ -136,7 +136,9 @@ exports.handler = async (event, context, callback) => {
   }
 
   // sorted data
-  const marketCapDataSorted = marketCapData && _.orderBy(marketCapData.map(c => { times.forEach(t => c[`price_change_percentage_${t}_in_currency_abs`] = Math.abs(c[`price_change_percentage_${t}_in_currency`])); return c; }), ['price_change_percentage_24h_in_currency_abs', 'price_change_percentage_1h_in_currency_abs'], ['desc', 'desc']);
+  const topGainerDataSorted = marketCapData && _.orderBy(marketCapData, ['price_change_percentage_24h_in_currency'], ['desc']);
+  const topLoserDataSorted = marketCapData && _.orderBy(marketCapData, ['price_change_percentage_24h_in_currency'], ['asc']);
+  const marketCapDataSorted = marketCapData && _.orderBy(marketCapData.filter(c => 0 < c.market_cap_rank && c.market_cap_rank <= 100).map(c => { times.forEach(t => c[`price_change_percentage_${t}_in_currency_abs`] = Math.abs(c[`price_change_percentage_${t}_in_currency`])); return c; }), ['price_change_percentage_24h_in_currency_abs', 'price_change_percentage_1h_in_currency_abs'], ['desc', 'desc']);
   const defiDataSorted = defiData && _.orderBy(defiData.map(c => { times.forEach(t => c[`price_change_percentage_${t}_in_currency_abs`] = Math.abs(c[`price_change_percentage_${t}_in_currency`])); return c; }), ['market_cap_rank', 'price_change_percentage_24h_in_currency_abs', 'price_change_percentage_1h_in_currency_abs'], ['asc', 'desc', 'desc']);
   const nftsDataSorted = nftsData && _.orderBy(nftsData.map(c => { times.forEach(t => c[`price_change_percentage_${t}_in_currency_abs`] = Math.abs(c[`price_change_percentage_${t}_in_currency`])); return c; }), ['market_cap_rank', 'price_change_percentage_24h_in_currency_abs', 'price_change_percentage_1h_in_currency_abs'], ['asc', 'desc', 'desc']);
   const trendingDataSorted = trendingData && trendingData.findIndex(c => typeof c.current_price === 'number') > -1 && _.orderBy(trendingData.map(c => { times.forEach(t => c[`price_change_percentage_${t}_in_currency_abs`] = Math.abs(c[`price_change_percentage_${t}_in_currency`])); return c; }), ['rank', 'price_change_percentage_24h_in_currency_abs', 'price_change_percentage_1h_in_currency_abs'], ['asc', 'desc', 'desc']);
@@ -232,11 +234,11 @@ exports.handler = async (event, context, callback) => {
   }
 
   if (!hasAllTime) {
-    const isRunTwitter = Number(moment().minutes()) === 0 && Number(moment().hours()) % 4 === 2;
+    const isRunTwitter = Number(moment().minutes()) === 0 && Number(moment().hours()) % 2 === 1;
 
-    const randNumber = Math.floor(Math.random() * 9);
+    const randNumber = Math.floor(Math.random() * 20);
 
-    if (randNumber < 3) {
+    if (randNumber < 4) {
       let id;
 
       if (marketCapDataSorted && marketCapDataSorted.length > 0) {
@@ -285,7 +287,105 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 6) {
+    else if (randNumber < 8) {
+      let id;
+
+      if (topGainerDataSorted && topGainerDataSorted.length > 0) {
+        let message = '';
+        const data = _.slice(topGainerDataSorted, 0, 3);
+
+        data.forEach((c, i) => {
+          // title
+          message += `${i === 0 ? `<a href="${website_url}">🙌 Top Gainers</a>` : ''}\n`;
+
+          // coin message
+          message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
+        });
+
+        id = `${dynamodb_feeds_type}_${moment().unix()}_top_gainers`;
+
+        // add message
+        if (message) {
+          telegramData.push(message);
+
+          // add feed
+          feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
+        }
+      }
+
+      if (isRunTwitter && topGainerDataSorted && topGainerDataSorted.length > 0) {
+        let message = '';
+        const data = _.slice(topGainerDataSorted, 0, 3);
+        data.forEach((c, i) => {
+          // title
+          message += `${i === 0 ? `Today's top Gainers 🤙` : ''}\n`;
+
+          // coin message
+          message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
+        });
+
+        // coins url
+        message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}`;
+
+        // add hashtag
+        message += `\n\n💙 if you HODL any one of them\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;
+
+        // add message
+        if (message) {
+          twitterData.push({ id, text: message, data });
+        }
+      }
+    }
+    else if (randNumber < 11) {
+      let id;
+
+      if (topLoserDataSorted && topLoserDataSorted.length > 0) {
+        let message = '';
+        const data = _.slice(topLoserDataSorted, 0, 3);
+
+        data.forEach((c, i) => {
+          // title
+          message += `${i === 0 ? `<a href="${website_url}">😓 Top Losers</a>` : ''}\n`;
+
+          // coin message
+          message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
+        });
+
+        id = `${dynamodb_feeds_type}_${moment().unix()}_top_losers`;
+
+        // add message
+        if (message) {
+          telegramData.push(message);
+
+          // add feed
+          feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
+        }
+      }
+
+      if (isRunTwitter && topLoserDataSorted && topLoserDataSorted.length > 0) {
+        let message = '';
+        const data = _.slice(topLoserDataSorted, 0, 3);
+        data.forEach((c, i) => {
+          // title
+          message += `${i === 0 ? `Today's top Losers 👎` : ''}\n`;
+
+          // coin message
+          message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
+        });
+
+        // coins url
+        message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}`;
+
+        // add hashtag
+        message += `\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;
+
+        // add message
+        if (message) {
+          twitterData.push({ id, text: message, data });
+        }
+      }
+    }
+    else if (randNumber < 15) {
       let id;
 
       if (trendingDataSorted && trendingDataSorted.length > 0) {
@@ -334,7 +434,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 7) {
+    else if (randNumber < 17) {
       let id;
 
       if (defiDataSorted && defiDataSorted.length > 0) {

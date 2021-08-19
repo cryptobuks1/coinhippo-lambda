@@ -236,7 +236,7 @@ exports.handler = async (event, context, callback) => {
   if (!hasAllTime) {
     const isRunTwitter = Number(moment().minutes()) === 0 && Number(moment().hours()) % 2 === 1;
 
-    const randNumber = Math.floor(Math.random() * 15);
+    const randNumber = Math.floor(Math.random() * 13);
 
     if (randNumber < 3) {
       let id;
@@ -287,7 +287,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 6) {
+    else if (randNumber < 5) {
       let id;
 
       if (topGainerDataSorted && topGainerDataSorted.length > 0) {
@@ -336,7 +336,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 8) {
+    else if (randNumber < 7) {
       let id;
 
       if (topLoserDataSorted && topLoserDataSorted.length > 0) {
@@ -385,7 +385,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 11) {
+    else if (randNumber < 10) {
       let id;
 
       if (trendingDataSorted && trendingDataSorted.length > 0) {
@@ -434,7 +434,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 13) {
+    else if (randNumber < 11) {
       let id;
 
       if (defiDataSorted && defiDataSorted.length > 0) {

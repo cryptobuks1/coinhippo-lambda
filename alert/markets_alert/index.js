@@ -114,7 +114,7 @@ exports.handler = async (event, context, callback) => {
   path = '/search/trending';
   params = null;
   response = await request(path, params);
-  let trendingData = response && response.coins && response.coins;
+  let trendingData = response && response.coins;
   if (trendingData && trendingData.length > 0) {
     path = '/coins/markets';
     params = { vs_currency, ids: trendingData.map(c => c.item && c.item.id).join(','), price_change_percentage: times.join(',') };
@@ -236,9 +236,9 @@ exports.handler = async (event, context, callback) => {
   if (!hasAllTime) {
     const isRunTwitter = Number(moment().minutes()) === 0 && Number(moment().hours()) % 2 === 1;
 
-    const randNumber = Math.floor(Math.random() * 20);
+    const randNumber = Math.floor(Math.random() * 15);
 
-    if (randNumber < 4) {
+    if (randNumber < 3) {
       let id;
 
       if (marketCapDataSorted && marketCapDataSorted.length > 0) {
@@ -287,7 +287,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 8) {
+    else if (randNumber < 6) {
       let id;
 
       if (topGainerDataSorted && topGainerDataSorted.length > 0) {
@@ -336,7 +336,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 11) {
+    else if (randNumber < 8) {
       let id;
 
       if (topLoserDataSorted && topLoserDataSorted.length > 0) {
@@ -385,7 +385,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 15) {
+    else if (randNumber < 11) {
       let id;
 
       if (trendingDataSorted && trendingDataSorted.length > 0) {
@@ -434,7 +434,7 @@ exports.handler = async (event, context, callback) => {
         }
       }
     }
-    else if (randNumber < 17) {
+    else if (randNumber < 13) {
       let id;
 
       if (defiDataSorted && defiDataSorted.length > 0) {

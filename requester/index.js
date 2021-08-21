@@ -41,6 +41,10 @@ exports.handler = async (event, context, callback) => {
       api_host: process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}',
       table_name: process.env.DYNAMODB_FEEDS_TABLE_NAME || '{YOUR_DYNAMODB_FEEDS_TABLE_NAME}',
     },
+    watchlist: {
+      api_host: process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}',
+      table_name: process.env.DYNAMODB_WATCHLIST_TABLE_NAME || '{YOUR_DYNAMODB_WATCHLIST_TABLE_NAME}',
+    },
   };
 
   // response data variable
@@ -151,6 +155,7 @@ exports.handler = async (event, context, callback) => {
           .catch(error => { return { data: { data: null, status: { error_message: error.message, error_code: error.code } } }; });
         break;
       case 'feeds':
+      case 'watchlist':
         // normalize path parameter
         path = path || '';
         // setup query string parameters including API key

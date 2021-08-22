@@ -17,6 +17,7 @@ exports.handler = async (event, context, callback) => {
   const dynamodb_api_host = process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}';
   const dynamodb_table_name = process.env.DYNAMODB_TABLE_NAME || 'coinhippo-feeds';
   const dynamodb_feeds_type = 'fear_and_greed';
+  const website_url = process.env.WEBSITE_URL || 'https://coinhippo.io';
   const low_threshold = Number(process.env.LOW_THRESHOLD) || 20;
   const high_threshold = Number(process.env.HIGH_THRESHOLD) || 75;
   const source_url = process.env.SOURCE_URL || 'https://alternative.me/crypto/fear-and-greed-index';

@@ -173,13 +173,13 @@ exports.handler = async (event, context, callback) => {
       }
       else if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.weeks, 5).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.weeks, 5)[0].low)).length / (i + 1))) >= coinsData.length / 2) {
         status = 'bear_starting';
-        text = 'Starting of Bearish 😢';
-        html = '<span class="h-5 flex flex-wrap items-center font-normal space-x-1"><span>Starting of</span><span class="font-bold">Bearish</span><span class="block lg:hidden xl:block text-xl">😢</span></span>';
+        text = 'Starting of Bearish';
+        html = '<span class="h-5 flex flex-wrap items-center font-normal space-x-1"><span>Starting of</span><span class="font-bold">Bearish</span></span>';
       }
       else if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.weeks, 3).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.weeks, 3)[0].low)).length / (i + 1))) >= coinsData.length / 2) {
         status = 'likely_bear';
-        text = '😅 smells like Bear Market';
-        html = '<span class="h-5 flex flex-wrap items-center font-normal space-x-1"><span class="block lg:hidden xl:block text-xl">😅</span><span>smells like</span><span class="font-bold">Bear Market</span></span>';
+        text = 'smells like Bear Market';
+        html = '<span class="h-5 flex flex-wrap items-center font-normal space-x-1"><span>smells like</span><span class="font-bold">Bear Market</span></span>';
       }
       else if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.months, 3).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.months, 3)[0].high)).length / (i + 1))) >= coinsData.length / 2) {
         status = 'bull';
@@ -188,13 +188,13 @@ exports.handler = async (event, context, callback) => {
       }
       else if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.weeks, 5).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.weeks, 5)[0].high)).length / (i + 1))) >= coinsData.length / 2) {
         status = 'bull_starting';
-        text = 'Starting of Bullish 😁';
-        html = '<span class="h-5 flex flex-wrap items-center font-normal space-x-1"><span>Starting of</span><span class="font-bold">Bullish</span><span class="block lg:hidden xl:block text-xl">😁</span></span>';
+        text = 'Starting of Bullish';
+        html = '<span class="h-5 flex flex-wrap items-center font-normal space-x-1"><span>Starting of</span><span class="font-bold">Bullish</span></span>';
       }
       else if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.weeks, 3).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.weeks, 3)[0].high)).length / (i + 1))) >= coinsData.length / 2) {
         status = 'likely_bull';
-        text = '🧐 smells like Bull Market';
-        html = '<span class="h-5 flex flex-wrap items-center font-normal space-x-1"><span class="block lg:hidden xl:block text-xl">🧐</span><span>smells like</span><span class="font-bold">Bull Market</span></span>';
+        text = 'smells like Bull Market';
+        html = '<span class="h-5 flex flex-wrap items-center font-normal space-x-1"><span>smells like</span><span class="font-bold">Bull Market</span></span>';
       }
       else {
         status = 'sideway';

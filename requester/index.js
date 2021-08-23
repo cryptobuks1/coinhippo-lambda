@@ -45,6 +45,9 @@ exports.handler = async (event, context, callback) => {
       api_host: process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}',
       table_name: process.env.DYNAMODB_WATCHLIST_TABLE_NAME || '{YOUR_DYNAMODB_WATCHLIST_TABLE_NAME}',
     },
+    analytics: {
+      api_host: process.env.ANALYTICS_API_HOST || '{YOUR_ANALYTICS_API_HOST}',
+    },
   };
 
   // response data variable
@@ -160,6 +163,17 @@ exports.handler = async (event, context, callback) => {
         path = path || '';
         // setup query string parameters including API key
         params = { table_name: env[apiName].table_name, ...event.queryStringParameters };
+
+        // send request
+        res = await requester.get(path, { params })
+          // set response data from error handled by exception
+          .catch(error => { return { data: { data: null, error } }; });
+        break;
+      case 'analytics':
+        // normalize path parameter
+        path = path || '';
+        // setup query string parameters including limit
+        params = { ...event.queryStringParameters };
 
         // send request
         res = await requester.get(path, { params })

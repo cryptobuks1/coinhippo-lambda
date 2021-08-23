@@ -56,7 +56,7 @@ exports.handler = async (event, context, callback) => {
   const vs_currency = 'usd';
   const currency_symbol = '$';
   const times = ['1h','24h','7d','30d'];
-  const filter_out_ids = ['wrapped-bitcoin','tether','usd-coin','binance-usd','dai'];
+  const filter_out_ids = ['wrapped-bitcoin','tether','usd-coin','binance-usd','dai','terrausd','true-usd'];
 
   // initial requester object
   const requester = axios.create({ baseURL: api_host, timeout: 30 * 1000 });

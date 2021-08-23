@@ -173,10 +173,10 @@ exports.handler = async (event, context, callback) => {
         // normalize path parameter
         path = path || '';
         // setup query string parameters including limit
-        params = { ...event.queryStringParameters };
+        params = { ...event.queryStringParameters, path };
 
         // send request
-        res = await requester.get(path, { params })
+        res = await requester.get('', { params })
           // set response data from error handled by exception
           .catch(error => { return { data: { data: null, error } }; });
         break;

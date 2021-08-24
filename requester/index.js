@@ -65,7 +65,7 @@ exports.handler = async (event, context, callback) => {
     delete event.queryStringParameters.api_name;
 
     // normalize chain parameter
-    const chain = event.queryStringParameters.chain.trim().toLowerCase();
+    const chain = event.queryStringParameters.chain && event.queryStringParameters.chain.trim().toLowerCase();
     // remove chain parameter before setup query string parameters
     delete event.queryStringParameters.chain;
 

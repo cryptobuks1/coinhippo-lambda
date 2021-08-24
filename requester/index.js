@@ -37,6 +37,10 @@ exports.handler = async (event, context, callback) => {
       api_host: process.env.COINMARKETCAP_API_HOST || 'https://api.coinmarketcap.com/data-api/v3/',
       api_key: process.env.COINMARKETCAP_API_KEY || '{YOUR_COINMARKETCAP_API_KEY}',
     },
+    parachain: {
+      api_host: process.env.PARACHAIN_API_HOST || 'https://rococo.api.subscan.io/api/scan/parachain/',
+      api_key: process.env.SUBSCAN_API_KEY || '{YOUR_SUBSCAN_API_KEY}',
+    },
     feeds: {
       api_host: process.env.DYNAMODB_API_HOST || '{YOUR_DYNAMODB_API_HOST}',
       table_name: process.env.DYNAMODB_FEEDS_TABLE_NAME || '{YOUR_DYNAMODB_FEEDS_TABLE_NAME}',
@@ -156,6 +160,17 @@ exports.handler = async (event, context, callback) => {
         res = await requester.get(path, { params })
           // set response data from error handled by exception
           .catch(error => { return { data: { data: null, status: { error_message: error.message, error_code: error.code } } }; });
+        break;
+      case 'parachain':
+        // normalize path parameter
+        path = path || '';
+        // setup query string parameters including limit
+        params = { ...event.queryStringParameters };
+
+        // send request
+        res = await requester.get(path, { params })
+          // set response data from error handled by exception
+          .catch(error => { return { data: { data: null, message: error.message, code: error.code } }; });
         break;
       case 'feeds':
       case 'watchlist':

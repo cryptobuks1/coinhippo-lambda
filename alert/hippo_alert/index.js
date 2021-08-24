@@ -190,7 +190,7 @@ exports.handler = async (event, context, callback) => {
       });
 
       // show whale alert link when has only one alert transaction
-      message += transactionsSorted.length === 1 ? transactionsSorted.map(x => `\n${x.tx_url}`) : '';
+      message += transactionsSorted.length < 3 ? transactionsSorted.map(x => `\n${x.tx_url}`) : '';
 
       // add hashtag when has alert transaction not more than 2 transactions
       message += transactionsSorted.length > 2 ? '' : `\n\n${_.uniq(transactionsSorted.map(x => `${x.blockchain ? `#${capitalize(x.blockchain)}` : ''}`).concat(transactionsSorted.flatMap(x => [x.from_address_name && x.from_address_name.indexOf(' ') < 0 && x.from_address_name.toLowerCase().indexOf('unknown') < 0 ? `#${capitalize(x.from_address_name)}` : '', x.to_address_name && x.to_address_name.indexOf(' ') < 0 && x.to_address_name.toLowerCase().indexOf('unknown') < 0 ? `#${capitalize(x.to_address_name)}` : '']))).filter(x => x).join(' ')} #WhaleAlert`;

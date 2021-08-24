@@ -38,7 +38,7 @@ exports.handler = async (event, context, callback) => {
       api_key: process.env.COINMARKETCAP_API_KEY || '{YOUR_COINMARKETCAP_API_KEY}',
     },
     parachain: {
-      api_host: process.env.PARACHAIN_API_HOST || 'https://rococo.api.subscan.io/api/scan/parachain/',
+      api_host: process.env.PARACHAIN_API_HOST || 'https://{chain}.api.subscan.io/api/scan/parachain/',
       api_key: process.env.SUBSCAN_API_KEY || '{YOUR_SUBSCAN_API_KEY}',
     },
     feeds: {
@@ -64,8 +64,13 @@ exports.handler = async (event, context, callback) => {
     // remove api_name parameter before setup query string parameters
     delete event.queryStringParameters.api_name;
 
+    // normalize chain parameter
+    const chain = event.queryStringParameters.chain.trim().toLowerCase();
+    // remove chain parameter before setup query string parameters
+    delete event.queryStringParameters.chain;
+
     // initial requester object
-    const requester = axios.create({ baseURL: env[apiName].api_host });
+    const requester = axios.create({ baseURL: env[apiName].api_host.replace('{chain}', chain) });
 
     // initial response object
     let res = null;

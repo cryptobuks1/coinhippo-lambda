@@ -168,7 +168,7 @@ exports.handler = async (event, context, callback) => {
         params = { ...event.queryStringParameters };
 
         // send request
-        res = await requester.get(path, { params })
+        res = await requester.post(path, { params })
           // set response data from error handled by exception
           .catch(error => { return { data: { data: null, message: error.message, code: error.code } }; });
         break;

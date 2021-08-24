@@ -157,7 +157,7 @@ exports.handler = async (event, context, callback) => {
         params = { ...event.queryStringParameters };
 
         // send request
-        res = await requester.get(path, { params })
+        res = await requester.get(path, { params, headers: { 'X-CMC_PRO_API_KEY': env[apiName].api_key } })
           // set response data from error handled by exception
           .catch(error => { return { data: { data: null, status: { error_message: error.message, error_code: error.code } } }; });
         break;
@@ -165,10 +165,10 @@ exports.handler = async (event, context, callback) => {
         // normalize path parameter
         path = path || '';
         // setup query string parameters including limit
-        params = { ...event.queryStringParameters };
+        params = Object.fromEntries(new Map(Object.entries(event.queryStringParameters).map(([key, value]) => [key, !isNaN(value) ? Number(value) : value])));
 
         // send request
-        res = await requester.post(path, { params })
+        res = await requester.post(path, { ...params }, { headers: { 'X-API-Key': env[apiName].api_key } })
           // set response data from error handled by exception
           .catch(error => { return { data: { data: null, message: error.message, code: error.code } }; });
         break;

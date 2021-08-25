@@ -170,7 +170,7 @@ exports.handler = async (event, context, callback) => {
         // normalize path parameter
         path = path || '';
         // setup query string parameters including limit
-        params = Object.fromEntries(new Map(Object.entries(event.queryStringParameters).map(([key, value]) => [key, !isNaN(value) ? Number(value) : value && value.includes(',') ? value.split(',') : value])));
+        params = Object.fromEntries(new Map(Object.entries(event.queryStringParameters).map(([key, value]) => [key, !isNaN(value) ? Number(value) : (value && value.includes(',')) || ['status'].includes(key) ? value.split(',') : value])));
 
         // send request
         res = await requester.post(path, { ...params }, { headers: { 'X-API-Key': env[apiName].api_key } })

@@ -37,8 +37,8 @@ exports.handler = async (event, context, callback) => {
       api_host: process.env.COINMARKETCAP_API_HOST || 'https://api.coinmarketcap.com/data-api/v3/',
       api_key: process.env.COINMARKETCAP_API_KEY || '{YOUR_COINMARKETCAP_API_KEY}',
     },
-    parachain: {
-      api_host: process.env.PARACHAIN_API_HOST || 'https://{chain}.api.subscan.io/api/scan/parachain/',
+    subscan: {
+      api_host: process.env.SUBSCAN_API_HOST || 'https://{chain}.api.subscan.io/api/',
       api_key: process.env.SUBSCAN_API_KEY || '{YOUR_SUBSCAN_API_KEY}',
     },
     feeds: {
@@ -166,7 +166,7 @@ exports.handler = async (event, context, callback) => {
           // set response data from error handled by exception
           .catch(error => { return { data: { data: null, status: { error_message: error.message, error_code: error.code } } }; });
         break;
-      case 'parachain':
+      case 'subscan':
         // normalize path parameter
         path = path || '';
         // setup query string parameters including limit

@@ -187,10 +187,10 @@ exports.handler = async (event, context, callback) => {
 
         // transaction message
         message += `${i > 0 ? '\n' : ''}- ${repeatIcon(x)} ${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'} ${numeral(x.amount).format('0,0')} $${x.symbol.toUpperCase()} (${currency_symbol}${numeral(x.amount_usd).format('0,0')})\n  ${x.transaction_type === 'mint' ? `at ${x.to_address_name}` : x.transaction_type === 'burn' ? `at ${x.from_address_name}` : x.transaction_type === 'lock' ? `at ${x.to_address_name}` : x.transaction_type === 'unlock' ? `at ${x.to_address_name}` : `${x.from_address_name.replace('Unknown ', '❔')} ➡️ ${x.to_address_name.replace('Unknown ', '❔')}`}`;
-      });
 
-      // show whale alert link when has only one alert transaction
-      message += transactionsSorted.length < 3 ? transactionsSorted.map(x => `\n${x.tx_url}`) : '';
+        // show whale alert link
+        message += transactionsSorted.length < 3 ? `\n${x.tx_url}` : '';
+      });
 
       // add hashtag when has alert transaction not more than 2 transactions
       message += transactionsSorted.length > 2 ? '' : `\n\n${_.uniq(transactionsSorted.map(x => `${x.blockchain ? `#${capitalize(x.blockchain)}` : ''}`).concat(transactionsSorted.flatMap(x => [x.from_address_name && x.from_address_name.indexOf(' ') < 0 && x.from_address_name.toLowerCase().indexOf('unknown') < 0 ? `#${capitalize(x.from_address_name)}` : '', x.to_address_name && x.to_address_name.indexOf(' ') < 0 && x.to_address_name.toLowerCase().indexOf('unknown') < 0 ? `#${capitalize(x.to_address_name)}` : '']))).filter(x => x).join(' ')} #WhaleAlert`;

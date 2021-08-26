@@ -317,18 +317,34 @@ exports.handler = async (event, context, callback) => {
 
           if (marketStatus === 'likely_bull') {
             if (pricesOrder.startsWith('042')) {
-              
+              buy_signals.push({
+                criteria: 'trend_reform',
+                pattern: 'double_bottom',
+                value: _.slice(pricesData, 100),
+              });
             }
             else if (pricesOrder.startsWith('04') && pricesOrder.endsWith('2')) {
-
+              buy_signals.push({
+                criteria: 'trend_reform',
+                pattern: 'inverted_head_&_shoulders',
+                value: _.slice(pricesData, 100),
+              });
             }
           }
           else if (marketStatus === 'likely_bear') {
             if (pricesOrder.endsWith('240')) {
-
+              sell_signals.push({
+                criteria: 'trend_reform',
+                pattern: 'double_top',
+                value: _.slice(pricesData, 100),
+              });
             }
             else if (pricesOrder.startsWith('2') && pricesOrder.endsWith('40')) {
-
+              sell_signals.push({
+                criteria: 'trend_reform',
+                pattern: 'head_&_shoulders',
+                value: _.slice(pricesData, 100),
+              });
             }
           }
         }

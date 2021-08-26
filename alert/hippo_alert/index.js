@@ -189,7 +189,7 @@ exports.handler = async (event, context, callback) => {
         message += `${i > 0 ? '\n' : ''}- ${repeatIcon(x)} ${x.transaction_type ? capitalize(x.is_donation ? 'donation' : x.is_hacked ? 'stolen funds' : x.transaction_type) : 'transaction'} ${numeral(x.amount).format('0,0')} $${x.symbol.toUpperCase()} (${currency_symbol}${numeral(x.amount_usd).format('0,0')})\n  ${x.transaction_type === 'mint' ? `at ${x.to_address_name}` : x.transaction_type === 'burn' ? `at ${x.from_address_name}` : x.transaction_type === 'lock' ? `at ${x.to_address_name}` : x.transaction_type === 'unlock' ? `at ${x.to_address_name}` : `${x.from_address_name.replace('Unknown ', '❔')} ➡️ ${x.to_address_name.replace('Unknown ', '❔')}`}`;
 
         // show whale alert link
-        message += transactionsSorted.length < 3 ? `\n${x.tx_url}` : '';
+        message += transactionsSorted.length < 3 ? `\n  ${x.tx_url}` : '';
       });
 
       // add hashtag when has alert transaction not more than 2 transactions

@@ -334,7 +334,7 @@ exports.handler = async (event, context, callback) => {
 
         if (c.prices && c.prices.days && c.prices.days['200'] && c.prices.days['200'].length > 0) {
           const pricesData = c.prices.days['200'];
-          const pricesOrder = _.orderBy(_.chunk(_.slice(pricesData, 100), 5).map((chunk, i) => { return { value: _.meanBy(chunk, 'value'), i } }), ['value'], ['desc']).map(chunk => chunk.i).join('');
+          const pricesOrder = _.orderBy(_.chunk(_.slice(pricesData, 100), 20).map((chunk, i) => { return { value: _.meanBy(chunk, 'value'), i } }), ['value'], ['desc']).map(chunk => chunk.i).join('');
 
           if (marketStatus === 'likely_bull') {
             if (pricesOrder.startsWith('042')) {
@@ -478,7 +478,7 @@ exports.handler = async (event, context, callback) => {
 
     if (coinsData && coinsData.length > 0) {
       let message = '';
-      const data = _.chunk(_.orderBy(coinsData, ['signal.action', 'signal.size'], ['asc', 'desc']), 3)[Math.floor(minute / 20)];
+      const data = (_.chunk(_.orderBy(coinsData, ['signal.action', 'signal.size'], ['asc', 'desc']), Math.ceil(coinsData.length / 3))[Math.floor(minute / 20)]) || [];
 
       data.forEach((c, i) => {
         // title

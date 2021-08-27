@@ -5,6 +5,7 @@
 exports.handler = async (event, context, callback) => {
   // import module for submitting request.
   const axios = require('axios');
+  const { parachains } = require('./data');
 
   /************************************************
    * External API information for requesting data
@@ -176,6 +177,16 @@ exports.handler = async (event, context, callback) => {
         res = await requester.post(path, { ...params }, { headers: { 'X-API-Key': env[apiName].api_key } })
           // set response data from error handled by exception
           .catch(error => { return { data: { data: null, message: error.message, code: error.code } }; });
+
+        // custom project data
+        if (path === '/scan/parachain/list' && res && res.data && res.data.data && res.data.data.chains) {
+          res.data.data.chains = res.data.data.chains.map(projectData => {
+            const paraData = (parachains[chain] && parachains[chain][projectData.para_id]) || {};
+            const { name, image, symbol } = { ...paraData };
+
+            return { ...projectData, name, image, symbol, paraData };
+          });
+        }
         break;
       case 'feeds':
       case 'watchlist':

@@ -72,7 +72,7 @@ exports.handler = async (event, context, callback) => {
   const vs_currency = 'usd';
   const currency_symbol = '$';
   const times = ['1h','24h','7d','30d'];
-  const filter_out_ids = ['wrapped-bitcoin','tether','usd-coin','binance-usd','dai','terrausd','true-usd'];
+  const filter_out_ids = ['wrapped-bitcoin','tether','usd-coin','binance-usd','dai','terrausd','true-usd','compound-ether','compound-usd-coin','cdai'];
 
   // initial requester object
   const requester = axios.create({ baseURL: api_host, timeout: 30 * 1000 });
@@ -117,6 +117,7 @@ exports.handler = async (event, context, callback) => {
   path = '/coins/markets';
   params = { vs_currency, order: 'market_cap_desc', per_page: route === '/markets/status' ? 5 : 50, price_change_percentage: times.join(',') };
   response = await request(path, params);
+  const coinsDataForStatus = (response && !response.error && _.slice(response, 0, 5)) || [];
   let coinsData = (response && !response.error && response.filter(c => filter_out_ids.indexOf(c.id) < 0)) || [];
 
   // setup chart data for analyze
@@ -215,7 +216,7 @@ exports.handler = async (event, context, callback) => {
             }),
           [granularity], ['asc']);
 
-          coinData.prices = { ...coinData.prices, [`${granularity}s`]: { ...coinData.prices[`${granularity}s`], [`${daysWithGranularitiesForMA[j].days}`]: pricesGranularityData } };
+          coinData.prices = { ...coinData.prices, [`${granularity}s`]: { ...(coinData.prices && coinData.prices[`${granularity}s`]), [`${daysWithGranularitiesForMA[j].days}`]: pricesGranularityData } };
         });
       }
     }
@@ -225,24 +226,29 @@ exports.handler = async (event, context, callback) => {
 
   // calculate market status
   let marketStatus;
+  let coinsDataStatus;
 
   if (coinsData) {
-    if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.ohlc.months, 3).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.months, 3)[0].low)).length / (i + 1))) >= coinsData.length / 2) {
+    coinsData = coinsData.filter(coinData => coinData.ohlc && coinData.volumes && coinData.prices);
+
+    coinsDataStatus = _.orderBy(coinsData.filter(coinData => coinsDataForStatus.findIndex(_coinData => _coinData.id === coinData.id) > -1), ['market_cap_rank'], ['asc']);
+
+    if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.months, 3).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.months, 3)[0].low)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'bear';
     }
-    else if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 5).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.weeks, 5)[0].low)).length / (i + 1))) >= coinsData.length / 2) {
+    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 5).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.weeks, 5)[0].low)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'bear_starting';
     }
-    else if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 3).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.weeks, 3)[0].low)).length / (i + 1))) >= coinsData.length / 2) {
+    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 3).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.weeks, 3)[0].low)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'likely_bear';
     }
-    else if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.ohlc.months, 3).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.months, 3)[0].high)).length / (i + 1))) >= coinsData.length / 2) {
+    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.months, 3).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.months, 3)[0].high)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'bull';
      }
-    else if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 5).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.weeks, 5)[0].high)).length / (i + 1))) >= coinsData.length / 2) {
+    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 5).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.weeks, 5)[0].high)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'bull_starting';
     }
-    else if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 3).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.weeks, 3)[0].high)).length / (i + 1))) >= coinsData.length / 2) {
+    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 3).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.weeks, 3)[0].high)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'likely_bull';
     }
     else {
@@ -378,8 +384,8 @@ exports.handler = async (event, context, callback) => {
 
         ['day', 'week', 'month'].forEach(granularity => {
           const { ohlc, volumes } = { ...c };
-          const ohlcData = ohlc && ohlc[`${granularity}s`] && ohlc[`${granularity}s`].length > 0;
-          const volumesData = volumes && volumes[`${granularity}s`] && volumes[`${granularity}s`].length > 0;
+          const ohlcData = ohlc && ohlc[`${granularity}s`] && ohlc[`${granularity}s`].length > 0 && ohlc[`${granularity}s`];
+          const volumesData = volumes && volumes[`${granularity}s`] && volumes[`${granularity}s`].length > 0 && volumes[`${granularity}s`];
 
           if (ohlcData) {
             const { open, high, low, close } = _.last(ohlcData);
@@ -465,13 +471,14 @@ exports.handler = async (event, context, callback) => {
       }).filter(c => c.signal && c.signal.action);
     }
 
-    const isRunTwitter = Number(moment().minutes()) === 20;
+    const minute = Number(moment().minutes())
+    const isRunTwitter = minute === 20;
 
     let id;
 
     if (coinsData && coinsData.length > 0) {
       let message = '';
-      const data = _.orderBy(coinsData, ['signal.action', 'signal.size'], ['asc', 'desc']);
+      const data = _.chunk(_.orderBy(coinsData, ['signal.action', 'signal.size'], ['asc', 'desc']), 3)[Math.floor(minute / 20)];
 
       data.forEach((c, i) => {
         // title
@@ -479,14 +486,15 @@ exports.handler = async (event, context, callback) => {
 
         // coin message
         message += `<b>${c.signal.action.toUpperCase()}</b> <a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
-        message += `\n🤙 Strategy: <pre>${capitalize(c.signal.strategy).toUpperCase()}</pre>\nCriteria 👉 <pre>${c.signal[c.signal.action].map(signal => signal.text).join(', ')}</pre>\n`;
+        message += `\nStrategy 🤙 <pre>${capitalize(c.signal.strategy).toUpperCase()}</pre>`;
+        message += `\nCriteria 👉 <pre>${c.signal[c.signal.action].map(signal => signal.text).join(', ')}</pre>\n`;
       });
 
       id = `${dynamodb_feeds_type}_${moment().unix()}`;
 
       // add message
       if (message) {
-        telegramData.push(message);
+        // telegramData.push(message);
 
         // add feed
         // feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });

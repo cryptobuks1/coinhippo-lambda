@@ -64,7 +64,7 @@ exports.handler = async (event, context, callback) => {
   const dynamodb_table_name = process.env.DYNAMODB_TABLE_NAME || 'coinhippo-feeds';
   const dynamodb_feeds_type = 'signal';
   const website_url = process.env.WEBSITE_URL || 'https://coinhippo.io';
-  const ath_change_threshold = Number(process.env.ATH_CHANGE_THRESHOLD) || -80;
+  const ath_change_threshold = Number(process.env.ATH_CHANGE_THRESHOLD) || -85;
   const min_candle_change_percentage = Number(process.env.MIN_CANDLE_CHANGE_PERCENTAGE) || 0.1;
   const doji_threshold = Number(process.env.DOJI_THRESHOLD) || 0.05;
   const hammer_threshold = Number(process.env.HAMMER_THRESHOLD) || 0.2;
@@ -307,14 +307,6 @@ exports.handler = async (event, context, callback) => {
         const buy_signals = [];
         const sell_signals = [];
 
-        if (typeof c.ath_change_percentage === 'number' && c.ath_change_percentage <= ath_change_threshold) {
-          buy_signals.push({
-            criteria: 'ath_change',
-            text: `${numeral(c.ath_change_percentage / 100).format('+0,0.00%')} from ATH`,
-            value: c.ath_change_percentage,
-          });
-        }
-
         if (c.ohlc) {
           if (_.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3).filter((priceData, i) => priceData.close > priceData.open && (i < 1 || priceData.close > _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3)[0].high)).length > 2) {
             buy_signals.push({
@@ -330,6 +322,14 @@ exports.handler = async (event, context, callback) => {
               value: _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3),
             });
           }
+        }
+
+        if (typeof c.ath_change_percentage === 'number' && c.ath_change_percentage < ath_change_threshold) {
+          buy_signals.push({
+            criteria: 'ath_change',
+            text: `${numeral(c.ath_change_percentage / 100).format('+0,0.00%')} from ATH`,
+            value: c.ath_change_percentage,
+          });
         }
 
         if (c.prices && c.prices.days && c.prices.days['200'] && c.prices.days['200'].length > 0) {
@@ -494,7 +494,7 @@ exports.handler = async (event, context, callback) => {
 
       // add message
       if (message) {
-        // telegramData.push(message);
+        telegramData.push(message);
 
         // add feed
         // feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });

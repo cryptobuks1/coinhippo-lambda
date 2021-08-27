@@ -41,6 +41,17 @@ exports.handler = async (event, context, callback) => {
     return '';
   };
 
+  const capitalize = s => typeof s !== 'string' ? '' : s.trim().split(' ').join('_').split('-').join('_').split('_').map(x => x.trim()).filter(x => x).map(x => `${x.substr(0, 1).toUpperCase()}${x.substr(1)}`).join(' ');
+
+  const getGranularityTitle = granularity => {
+    const titles = {
+      day: 'Daily',
+      week: 'Weekly',
+      month: 'Monthly',
+    };
+    return titles[granularity] || capitalize(granularity);
+  };
+
   // output data
   const telegramData = [];
   let twitterData = [];
@@ -57,6 +68,7 @@ exports.handler = async (event, context, callback) => {
   const min_candle_change_percentage = Number(process.env.MIN_CANDLE_CHANGE_PERCENTAGE) || 0.1;
   const doji_threshold = Number(process.env.DOJI_THRESHOLD) || 0.05;
   const hammer_threshold = Number(process.env.HAMMER_THRESHOLD) || 0.2;
+  const ma_threshold = Number(process.env.MA_THRESHOLD) || 0.03;
   const vs_currency = 'usd';
   const currency_symbol = '$';
   const times = ['1h','24h','7d','30d'];
@@ -108,23 +120,23 @@ exports.handler = async (event, context, callback) => {
   let coinsData = (response && !response.error && response.filter(c => filter_out_ids.indexOf(c.id) < 0)) || [];
 
   // setup chart data for analyze
-  const daysWithGranularities = {
-    [
+  const daysWithGranularities = [
+    {
       days: 120,
       granularities: ['week', 'month'],
-    ],
-    [
+    },
+    {
       days: 30,
       granularities: ['day'],
-    ],
-  };
+    },
+  ];
 
-  const daysWithGranularitiesForMA = {
-    [
+  const daysWithGranularitiesForMA = [
+    {
       days: 200,
       granularities: ['day'],
-    ],
-  };
+    },
+  ];
 
   for (let i = 0; i < coinsData.length; i++) {
     const coinData = coinsData[i];
@@ -292,6 +304,7 @@ exports.handler = async (event, context, callback) => {
         if (typeof c.ath_change_percentage === 'number' && c.ath_change_percentage <= ath_change_threshold) {
           buy_signals.push({
             criteria: 'ath_change',
+            text: `${numeral(c.ath_change_percentage / 100).format('+0,0.00%')} from ATH`,
             value: c.ath_change_percentage,
           });
         }
@@ -299,13 +312,15 @@ exports.handler = async (event, context, callback) => {
         if (c.ohlc) {
           if (_.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3).filter((priceData, i) => priceData.close > priceData.open && (i < 1 || priceData.close > _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3)[0].high)).length > 2) {
             buy_signals.push({
-              criteria: '3_weeks',
+              criteria: 'three_white_soldiers',
+              text: 'Three White Soldiers',
               value: _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3),
             });
           }
           else if (_.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3).filter((priceData, i) => priceData.close < priceData.open && (i < 1 || priceData.close < _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3)[0].low)).length > 2) {
             sell_signals.push({
-              criteria: '3_weeks',
+              criteria: 'three_black_crows',
+              text: 'Three Black Crows',
               value: _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3),
             });
           }
@@ -320,6 +335,7 @@ exports.handler = async (event, context, callback) => {
               buy_signals.push({
                 criteria: 'trend_reform',
                 pattern: 'double_bottom',
+                text: 'Double Bottom',
                 value: _.slice(pricesData, 100),
               });
             }
@@ -327,6 +343,7 @@ exports.handler = async (event, context, callback) => {
               buy_signals.push({
                 criteria: 'trend_reform',
                 pattern: 'inverted_head_&_shoulders',
+                text: 'Inverted Head & Shoulders',
                 value: _.slice(pricesData, 100),
               });
             }
@@ -336,6 +353,7 @@ exports.handler = async (event, context, callback) => {
               sell_signals.push({
                 criteria: 'trend_reform',
                 pattern: 'double_top',
+                text: 'Double Top',
                 value: _.slice(pricesData, 100),
               });
             }
@@ -343,9 +361,18 @@ exports.handler = async (event, context, callback) => {
               sell_signals.push({
                 criteria: 'trend_reform',
                 pattern: 'head_&_shoulders',
+                text: 'Head & Shoulders',
                 value: _.slice(pricesData, 100),
               });
             }
+          }
+
+          if (Math.abs((c.current_price / _.meanBy(pricesData, 'value')) - 1) <= ma_threshold) {
+            buy_signals.push({
+              criteria: 'ma200',
+              text: 'MA200',
+              value: _.meanBy(pricesData, 'value'),
+            });
           }
         }
 
@@ -361,10 +388,10 @@ exports.handler = async (event, context, callback) => {
               if (_.slice(_.takeRight(ohlcData, 4), 0, 3).filter((priceData, i) => priceData.close > priceData.open && (i < 1 || priceData.close > _.slice(_.takeRight(ohlcData, 4), 0, 3)[0].high)).length > 2) {
                 let reformPattern;
 
-                if (Math.abs((_.mean([open, close]) / _.mean([high, low])) - 1) < doji_threshold) {
+                if (Math.abs((_.mean([open, close]) / _.mean([high, low])) - 1) <= doji_threshold) {
                   reformPattern = 'doji';
                 }
-                else if (doji_threshold <= Math.abs(close - open) / Math.abs(high - low) && Math.abs(close - open) / Math.abs(high - low) < hammer_threshold && (Math.abs((close / low) - 1) < doji_threshold || Math.abs((open / low) - 1) < doji_threshold)) {
+                else if (doji_threshold <= Math.abs(close - open) / Math.abs(high - low) && Math.abs(close - open) / Math.abs(high - low) <= hammer_threshold && (Math.abs((close / low) - 1) <= doji_threshold || Math.abs((open / low) - 1) <= doji_threshold)) {
                   reformPattern = 'hammer';
                 }
 
@@ -372,6 +399,7 @@ exports.handler = async (event, context, callback) => {
                   sell_signals.push({
                     criteria: `${granularity}_reform`,
                     pattern: reformPattern,
+                    text: `${getGranularityTitle(granularity)} ${capitalize(reformPattern)}`,
                     value: _.takeRight(ohlcData, 4),
                   });
                 }
@@ -379,10 +407,10 @@ exports.handler = async (event, context, callback) => {
               else if (_.slice(_.takeRight(ohlcData, 4), 0, 3).filter((priceData, i) => priceData.close < priceData.open && (i < 1 || priceData.close < _.slice(_.takeRight(ohlcData, 4), 0, 3)[0].low)).length > 2) {
                 let reformPattern;
 
-                if (Math.abs((_.mean([open, close]) / _.mean([high, low])) - 1) < doji_threshold) {
+                if (Math.abs((_.mean([open, close]) / _.mean([high, low])) - 1) <= doji_threshold) {
                   reformPattern = 'doji';
                 }
-                else if (doji_threshold <= Math.abs(close - open) / Math.abs(high - low) && Math.abs(close - open) / Math.abs(high - low) < hammer_threshold && (Math.abs((close / high) - 1) < doji_threshold || Math.abs((open / high) - 1) < doji_threshold)) {
+                else if (doji_threshold <= Math.abs(close - open) / Math.abs(high - low) && Math.abs(close - open) / Math.abs(high - low) <= hammer_threshold && (Math.abs((close / high) - 1) <= doji_threshold || Math.abs((open / high) - 1) <= doji_threshold)) {
                   reformPattern = 'hammer';
                 }
 
@@ -390,6 +418,7 @@ exports.handler = async (event, context, callback) => {
                   buy_signals.push({
                     criteria: `${granularity}_reform`,
                     pattern: reformPattern,
+                    text: `${getGranularityTitle(granularity)} ${capitalize(reformPattern)}`,
                     value: _.takeRight(ohlcData, 4),
                   });
                 }
@@ -401,12 +430,14 @@ exports.handler = async (event, context, callback) => {
                 if (close > open) {
                   buy_signals.push({
                     criteria: `${granularity}_big_lot`,
+                    text: `${getGranularityTitle(granularity)} Big Lot`,
                     value: _.last(volumesData),
                   });
                 }
                 else if (open > close) {
                   sell_signals.push({
                     criteria: `${granularity}_big_lot`,
+                    text: `${getGranularityTitle(granularity)} Big Lot`,
                     value: _.last(volumesData),
                   });
                 }
@@ -421,6 +452,7 @@ exports.handler = async (event, context, callback) => {
             buy: buy_signals,
             sell: sell_signals,
             action: buy_signals.length > sell_signals.length ? 'buy' : sell_signals.length > buy_signals.length ? 'sell' : null,
+            size: buy_signals.length > sell_signals.length ? buy_signals.length : sell_signals.length > buy_signals.length ? sell_signals.length : null,
             strategy: !marketStatus ? null :
               marketStatus.includes('bull') ? buy_signals.length > sell_signals.length ? 'buy_on_dips' : 'hodl' :
               marketStatus.includes('bear') ? buy_signals.length > sell_signals.length ? 'wait_&_see' : 'hold_stablecoin' :
@@ -433,20 +465,21 @@ exports.handler = async (event, context, callback) => {
       }).filter(c => c.signal && c.signal.action);
     }
 
-    const isRunTwitter = Number(moment().minutes()) === 0 && Number(moment().hours()) % 2 === 1;
+    const isRunTwitter = Number(moment().minutes()) === 0;
 
     let id;
 
     if (coinsData && coinsData.length > 0) {
       let message = '';
-      const data = _.slice(coinsData.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
+      const data = _.orderBy(coinsData, ['signal.action', 'signal.size'], ['asc', 'desc']);
 
       data.forEach((c, i) => {
         // title
-        message += `${i === 0 ? `<a href="${website_url}/coins">🌪 Signal</a>` : ''}\n`;
+        message += `${i === 0 ? `<a href="${website_url}/coins">🤔 Trade Signal</a>` : ''}\n`;
 
         // coin message
-        message += `<a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
+        message += `<b>${c.signal.action.toUpperCase()}</b> <a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
+        message += `\n🤙 Strategy: <pre>${capitalize(c.signal.strategy).toUpperCase()}</pre>\nCriteria 👉 <pre>${c.signal[c.signal.action].map(signal => signal.text).join(', ')}</pre>\n`
       });
 
       id = `${dynamodb_feeds_type}_${moment().unix()}`;
@@ -456,7 +489,7 @@ exports.handler = async (event, context, callback) => {
         telegramData.push(message);
 
         // add feed
-        feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
+        // feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
       }
     }
 
@@ -475,7 +508,7 @@ exports.handler = async (event, context, callback) => {
     //   message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins`;
 
     //   // add hashtag
-    //   message += `\n\n💙 if you HODL any one of them\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} `;
+    //   message += `\n\n⭐ Not Financial Advice\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} #CoinHippo `;
 
     //   // add message
     //   if (message) {

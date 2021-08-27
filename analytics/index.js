@@ -168,7 +168,7 @@ exports.handler = async (event, context, callback) => {
             }),
           [granularity], ['asc']);
 
-          coinData.ohlc = { ...coinData.ohlc, [`${granularity}s`]: pricesGranularityData }
+          coinData.ohlc = { ...coinData.ohlc, [`${granularity}s`]: pricesGranularityData };
         });
       }
 
@@ -189,7 +189,7 @@ exports.handler = async (event, context, callback) => {
             }),
           [granularity], ['asc']);
 
-          coinData.volumes = { ...coinData.volumes, [`${granularity}s`]: volumesGranularityData }
+          coinData.volumes = { ...coinData.volumes, [`${granularity}s`]: volumesGranularityData };
         });
       }
     }
@@ -215,7 +215,7 @@ exports.handler = async (event, context, callback) => {
             }),
           [granularity], ['asc']);
 
-          coinData.prices = { ...coinData.prices, [`${granularity}s`]: { ...coinData.prices[`${granularity}s`], [`${daysWithGranularitiesForMA[j].days}`]: pricesGranularityData } }
+          coinData.prices = { ...coinData.prices, [`${granularity}s`]: { ...coinData.prices[`${granularity}s`], [`${daysWithGranularitiesForMA[j].days}`]: pricesGranularityData } };
         });
       }
     }
@@ -226,7 +226,7 @@ exports.handler = async (event, context, callback) => {
   // calculate market status
   let marketStatus;
 
-  if (coinsData && coinData.prices) {
+  if (coinsData) {
     if (_.mean(coinsData.map((coinData, i) => _.takeRight(coinData.ohlc.months, 3).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.months, 3)[0].low)).length / (i + 1))) >= coinsData.length / 2) {
       marketStatus = 'bear';
     }
@@ -465,7 +465,7 @@ exports.handler = async (event, context, callback) => {
       }).filter(c => c.signal && c.signal.action);
     }
 
-    const isRunTwitter = Number(moment().minutes()) === 0;
+    const isRunTwitter = Number(moment().minutes()) === 20;
 
     let id;
 
@@ -479,7 +479,7 @@ exports.handler = async (event, context, callback) => {
 
         // coin message
         message += `<b>${c.signal.action.toUpperCase()}</b> <a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
-        message += `\n🤙 Strategy: <pre>${capitalize(c.signal.strategy).toUpperCase()}</pre>\nCriteria 👉 <pre>${c.signal[c.signal.action].map(signal => signal.text).join(', ')}</pre>\n`
+        message += `\n🤙 Strategy: <pre>${capitalize(c.signal.strategy).toUpperCase()}</pre>\nCriteria 👉 <pre>${c.signal[c.signal.action].map(signal => signal.text).join(', ')}</pre>\n`;
       });
 
       id = `${dynamodb_feeds_type}_${moment().unix()}`;

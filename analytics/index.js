@@ -114,6 +114,9 @@ exports.handler = async (event, context, callback) => {
   // get route
   const route = event.queryStringParameters && event.queryStringParameters.path;
 
+  // get current minute
+  const minute = Number(moment().minutes())
+
   // request coins
   path = '/coins/markets';
   params = { vs_currency, order: 'market_cap_desc', per_page: route === '/markets/status' ? 5 : 50, price_change_percentage: times.join(',') };
@@ -479,7 +482,6 @@ exports.handler = async (event, context, callback) => {
       );
     }
 
-    const minute = Number(moment().minutes())
     const isRunTwitter = minute % 20 === 0;
 
     let id;
@@ -504,7 +506,7 @@ exports.handler = async (event, context, callback) => {
       if (message) {
         telegramData.push(message);
 
-        data = data.slice(data, 0, 3);
+        data = _.slice(data, 0, 3);
         // add feed
         feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
       }

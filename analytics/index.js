@@ -66,13 +66,14 @@ exports.handler = async (event, context, callback) => {
   const website_url = process.env.WEBSITE_URL || 'https://coinhippo.io';
   const ath_change_threshold = Number(process.env.ATH_CHANGE_THRESHOLD) || -90;
   const min_candle_change_percentage = Number(process.env.MIN_CANDLE_CHANGE_PERCENTAGE) || 0.1;
-  const doji_threshold = Number(process.env.DOJI_THRESHOLD) || 0.05;
+  const candle_threshold = Number(process.env.CANDLE_THRESHOLD) || 0.1;
+  const doji_threshold = Number(process.env.DOJI_THRESHOLD) || 0.01;
   const hammer_threshold = Number(process.env.HAMMER_THRESHOLD) || 0.2;
   const ma_threshold = Number(process.env.MA_THRESHOLD) || 0.03;
   const vs_currency = 'usd';
   const currency_symbol = '$';
   const times = ['1h','24h','7d','30d'];
-  const filter_out_ids = ['wrapped-bitcoin','tether','usd-coin','binance-usd','dai','terrausd','true-usd','compound-ether','compound-usd-coin','cdai'];
+  const filter_out_ids = ['wrapped-bitcoin','tether','usd-coin','binance-usd','dai','terrausd','true-usd','compound-ether','compound-usd-coin','cdai','bitcoin-cash','bitcoin-cash-sv','bitcoin-cash-abc-2','bitcoin-gold'];
 
   // initial requester object
   const requester = axios.create({ baseURL: api_host, timeout: 30 * 1000 });
@@ -138,6 +139,8 @@ exports.handler = async (event, context, callback) => {
       granularities: ['day'],
     },
   ];
+
+  const maList = [200, 100, 50, 20];
 
   for (let i = 0; i < coinsData.length; i++) {
     const coinData = coinsData[i];
@@ -233,22 +236,22 @@ exports.handler = async (event, context, callback) => {
 
     coinsDataStatus = _.orderBy(coinsData.filter(coinData => coinsDataForStatus.findIndex(_coinData => _coinData.id === coinData.id) > -1), ['market_cap_rank'], ['asc']);
 
-    if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.months, 3).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.months, 3)[0].low)).length / (i + 1))) >= coinsDataStatus.length / 2) {
+    if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.months, 3).filter((priceData, j) => priceData.close < priceData.open && Math.abs((priceData.close / priceData.low) - 1) <= candle_threshold && Math.abs((priceData.open / priceData.high) - 1) <= candle_threshold && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.months, 3)[0].low)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'bear';
     }
-    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 5).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.weeks, 5)[0].low)).length / (i + 1))) >= coinsDataStatus.length / 2) {
+    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 5).filter((priceData, j) => priceData.close < priceData.open && Math.abs((priceData.close / priceData.low) - 1) <= candle_threshold && Math.abs((priceData.open / priceData.high) - 1) <= candle_threshold && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.weeks, 5)[0].low)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'bear_starting';
     }
-    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 3).filter((priceData, j) => priceData.close < priceData.open && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.weeks, 3)[0].low)).length / (i + 1))) >= coinsDataStatus.length / 2) {
+    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 3).filter((priceData, j) => priceData.close < priceData.open && Math.abs((priceData.close / priceData.low) - 1) <= candle_threshold && Math.abs((priceData.open / priceData.high) - 1) <= candle_threshold && (j < 1 || priceData.close < _.takeRight(coinData.ohlc.weeks, 3)[0].low)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'likely_bear';
     }
-    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.months, 3).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.months, 3)[0].high)).length / (i + 1))) >= coinsDataStatus.length / 2) {
+    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.months, 3).filter((priceData, j) => priceData.close > priceData.open && Math.abs((priceData.close / priceData.high) - 1) <= candle_threshold && Math.abs((priceData.open / priceData.low) - 1) <= candle_threshold && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.months, 3)[0].high)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'bull';
      }
-    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 5).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.weeks, 5)[0].high)).length / (i + 1))) >= coinsDataStatus.length / 2) {
+    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 5).filter((priceData, j) => priceData.close > priceData.open && Math.abs((priceData.close / priceData.high) - 1) <= candle_threshold && Math.abs((priceData.open / priceData.low) - 1) <= candle_threshold && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.weeks, 5)[0].high)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'bull_starting';
     }
-    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 3).filter((priceData, j) => priceData.close > priceData.open && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.weeks, 3)[0].high)).length / (i + 1))) >= coinsDataStatus.length / 2) {
+    else if (_.mean(coinsDataStatus.map((coinData, i) => _.takeRight(coinData.ohlc.weeks, 3).filter((priceData, j) => priceData.close > priceData.open && Math.abs((priceData.close / priceData.high) - 1) <= candle_threshold && Math.abs((priceData.open / priceData.low) - 1) <= candle_threshold && (j < 1 || priceData.close > _.takeRight(coinData.ohlc.weeks, 3)[0].high)).length / (i + 1))) >= coinsDataStatus.length / 2) {
       marketStatus = 'likely_bull';
     }
     else {
@@ -316,14 +319,14 @@ exports.handler = async (event, context, callback) => {
         }
 
         if (c.ohlc) {
-          if (_.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3).filter((priceData, i) => priceData.close > priceData.open && (i < 1 || priceData.close > _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3)[0].high)).length > 2) {
+          if (_.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3).filter((priceData, i) => priceData.close > priceData.open && Math.abs((priceData.close / priceData.high) - 1) <= candle_threshold && Math.abs((priceData.open / priceData.low) - 1) <= candle_threshold && (i < 1 || priceData.close > _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3)[0].high)).length > 2) {
             buy_signals.push({
               criteria: 'three_white_soldiers',
               text: 'Three White Soldiers',
               value: _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3),
             });
           }
-          else if (_.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3).filter((priceData, i) => priceData.close < priceData.open && (i < 1 || priceData.close < _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3)[0].low)).length > 2) {
+          else if (_.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3).filter((priceData, i) => priceData.close < priceData.open &&Math.abs((priceData.close / priceData.low) - 1) <= candle_threshold && Math.abs((priceData.open / priceData.high) - 1) <= candle_threshold && (i < 1 || priceData.close < _.slice(_.takeRight(c.ohlc.weeks, 4), 0, 3)[0].low)).length > 2) {
             sell_signals.push({
               criteria: 'three_black_crows',
               text: 'Three Black Crows',
@@ -373,13 +376,15 @@ exports.handler = async (event, context, callback) => {
             }
           }
 
-          if (Math.abs((c.current_price / _.meanBy(pricesData, 'value')) - 1) <= ma_threshold) {
-            buy_signals.push({
-              criteria: 'ma200',
-              text: 'MA200',
-              value: _.meanBy(pricesData, 'value'),
-            });
-          }
+          maList.forEach(ma => {
+            if (Math.abs((c.current_price / _.meanBy(_.takeRight(pricesData, ma), 'value')) - 1) <= ma_threshold) {
+              buy_signals.push({
+                criteria: `ma${ma}`,
+                text: `MA${ma}`,
+                value: _.meanBy(_.takeRight(pricesData, ma), 'value'),
+              });
+            }
+          });
         }
 
         ['day', 'week', 'month'].forEach(granularity => {
@@ -394,7 +399,7 @@ exports.handler = async (event, context, callback) => {
               if (_.slice(_.takeRight(ohlcData, 4), 0, 3).filter((priceData, i) => priceData.close > priceData.open && (i < 1 || priceData.close > _.slice(_.takeRight(ohlcData, 4), 0, 3)[0].high)).length > 2) {
                 let reformPattern;
 
-                if (Math.abs((_.mean([open, close]) / _.mean([high, low])) - 1) <= doji_threshold) {
+                if (Math.abs((open / close) - 1) <= doji_threshold && Math.abs((_.mean([open, close]) / _.mean([high, low])) - 1) <= doji_threshold) {
                   reformPattern = 'doji';
                 }
                 else if (doji_threshold <= Math.abs(close - open) / Math.abs(high - low) && Math.abs(close - open) / Math.abs(high - low) <= hammer_threshold && (Math.abs((close / low) - 1) <= doji_threshold || Math.abs((open / low) - 1) <= doji_threshold)) {
@@ -413,7 +418,7 @@ exports.handler = async (event, context, callback) => {
               else if (_.slice(_.takeRight(ohlcData, 4), 0, 3).filter((priceData, i) => priceData.close < priceData.open && (i < 1 || priceData.close < _.slice(_.takeRight(ohlcData, 4), 0, 3)[0].low)).length > 2) {
                 let reformPattern;
 
-                if (Math.abs((_.mean([open, close]) / _.mean([high, low])) - 1) <= doji_threshold) {
+                if (Math.abs((open / close) - 1) <= doji_threshold && Math.abs((_.mean([open, close]) / _.mean([high, low])) - 1) <= doji_threshold) {
                   reformPattern = 'doji';
                 }
                 else if (doji_threshold <= Math.abs(close - open) / Math.abs(high - low) && Math.abs(close - open) / Math.abs(high - low) <= hammer_threshold && (Math.abs((close / high) - 1) <= doji_threshold || Math.abs((open / high) - 1) <= doji_threshold)) {
@@ -468,17 +473,20 @@ exports.handler = async (event, context, callback) => {
         };
 
         return c;
-      }).filter(c => c.signal && c.signal.action);
+      }).filter(c => c.signal && c.signal.action &&
+        c.signal[c.signal.action].findIndex(signal => signal.criteria === 'day_reform' || maList.findIndex(ma => signal.criteria === `ma${ma}`) > -1) > -1 &&
+        (c.signal[c.signal.action].length > 1 || c.signal[c.signal.action].findIndex(signal => maList.filter(ma => ma < 100).findIndex(ma => signal.criteria === `ma${ma}`) > -1) < 0)
+      );
     }
 
     const minute = Number(moment().minutes())
-    const isRunTwitter = minute === 20;
+    const isRunTwitter = minute % 20 === 0;
 
     let id;
 
     if (coinsData && coinsData.length > 0) {
       let message = '';
-      const data = (_.chunk(_.orderBy(coinsData, ['signal.action', 'signal.size'], ['asc', 'desc']), Math.ceil(coinsData.length / 3))[Math.floor(minute / 20)]) || [];
+      let data = (_.slice(_.chunk(_.orderBy(coinsData, ['signal.size'], ['desc']), Math.ceil(coinsData.length / 3))[Math.floor(minute / 20)], 0, 5)) || [];
 
       data.forEach((c, i) => {
         // title
@@ -486,8 +494,8 @@ exports.handler = async (event, context, callback) => {
 
         // coin message
         message += `<b>${c.signal.action.toUpperCase()}</b> <a href="${website_url}/coin/${c.id}">${c.symbol ? c.symbol.toUpperCase() : c.name}</a> <b>${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))}</b> <pre>${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}</pre>`;
-        message += `\nStrategy 🤙 <pre>${capitalize(c.signal.strategy).toUpperCase()}</pre>`;
-        message += `\nCriteria 👉 <pre>${c.signal[c.signal.action].map(signal => signal.text).join(', ')}</pre>\n`;
+        message += `\nStrategy: <pre>${capitalize(c.signal.strategy).toUpperCase()}</pre>`;
+        message += `\nCriteria: <pre>${c.signal[c.signal.action].map(signal => signal.text).join(', ')}</pre>\n`;
       });
 
       id = `${dynamodb_feeds_type}_${moment().unix()}`;
@@ -496,32 +504,32 @@ exports.handler = async (event, context, callback) => {
       if (message) {
         telegramData.push(message);
 
+        data = data.slice(data, 0, 3);
         // add feed
-        // feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
+        feedsData.push({ id, FeedType: dynamodb_feeds_type, Message: message, Json: JSON.stringify(data) });
       }
-    }
 
-    if (isRunTwitter && coinsData && coinsData.length > 0) {
-      let message = '';
-    //   const data = _.slice(coinsData.filter(c => c.price_change_percentage_24h_in_currency_abs >= 5), 0, 3);
-    //   data.forEach((c, i) => {
-    //     // title
-    //     message += `${i === 0 ? `Let's check on the top${data.length > 1 ? ` ${data.length}` : ''} % changes 🌊` : ''}\n`;
+      if (isRunTwitter && data.length > 0) {
+        message = '';
+        data.forEach((c, i) => {
+          // title
+          message += `${i === 0 ? 'Technical Suggestion' : ''}\n`;
 
-    //     // coin message
-    //     message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
-    //   });
+          // coin message
+          message += `${c.signal.action.toUpperCase()} ${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
+        });
 
-    //   // coins url
-    //   message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins`;
+        // coins url
+        message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `${website_url}/coins`;
 
-    //   // add hashtag
-    //   message += `\n\n⭐ Not Financial Advice\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} #CoinHippo `;
+        // add hashtag
+        message += `\n\n⭐ Not Financial Advice\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} #CoinHippo `;
 
-    //   // add message
-    //   if (message) {
-    //     twitterData.push({ id, text: message, data });
-    //   }
+        // add message
+        if (message) {
+          twitterData.push({ id, text: message, data });
+        }
+      }
     }
 
     // normalize twitter data for social poster

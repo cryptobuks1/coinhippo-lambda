@@ -522,7 +522,7 @@ exports.handler = async (event, context, callback) => {
         });
 
         // coins url
-        message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `${website_url}/coins`;
+        message += data.length === 1 ? data.map(c => `\n${website_url}/coin/${c.id}`) : `\n${website_url}/coins`;
 
         // add hashtag
         message += `\n\n⭐ Not Financial Advice\n\n${data.map(c => `${c.name ? `#${c.name.split(' ').filter(x => x).join('')}` : ''}`).join(' ')} #CoinHippo `;

@@ -465,7 +465,7 @@ exports.handler = async (event, context, callback) => {
         const data = _.slice(defiDataSorted, 0, 3);
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `🦄🥞🍣 Update on the top${data.length > 1 ? ` ${data.length}` : ''} DeFi from their last 24h prices:` : ''}\n`;
+          message += `${i === 0 ? `🦄🥞🍣 Top${data.length > 1 ? ` ${data.length}` : ''} DeFi` : ''}\n`;
 
           // coin message
           message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;
@@ -514,7 +514,7 @@ exports.handler = async (event, context, callback) => {
         const data = _.slice(nftsDataSorted, 0, 3);
         data.forEach((c, i) => {
           // title
-          message += `${i === 0 ? `🎑👻🎮 Update on the top${data.length > 1 ? ` ${data.length}` : ''} NFTs from their last 24h prices:` : ''}\n`;
+          message += `${i === 0 ? `🎑👻🎮 Update on the top${data.length > 1 ? ` ${data.length}` : ''} NFTs` : ''}\n`;
 
           // coin message
           message += `${c.symbol ? `$${c.symbol.toUpperCase()}` : c.name} ${currency_symbol}${numberOptimizeDecimal(numeral(c.current_price).format(`0,0${c.current_price >= 100 ? '' : c.current_price >= 1 ? '.00' : '.00000000'}`))} ${numeral(c.price_change_percentage_24h_in_currency / 100).format('+0,0.00%')}`;

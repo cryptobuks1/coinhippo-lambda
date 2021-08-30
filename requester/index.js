@@ -278,7 +278,7 @@ exports.handler = async (event, context, callback) => {
             };
 
             if (path === '/search') {
-              const chunk = _.chunk(res.data.coins, 1000);
+              const chunk = _.chunk(res.data.coins, 1500);
               for (let i = 0; i < chunk.length; i++) {
                 const _cacheData = { ...cacheData, ID: `${id}_${i}`, Json: JSON.stringify(chunk[i]) };
 

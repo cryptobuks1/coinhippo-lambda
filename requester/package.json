@@ -4,6 +4,8 @@
   "main": "index.js",
   "dependencies": {
     "axios": "^0.21.1",
+    "compress-json": "^1.0.4",
+    "jsonc": "^2.0.0",
     "moment": "^2.29.1"
   }
 }

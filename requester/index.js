@@ -9,6 +9,9 @@ exports.handler = async (event, context, callback) => {
   // import modules
   const { parachains } = require('./data');
   const moment = require('moment');
+  const jsonc = require('jsonc');
+  const JSON = jsonc;
+  const compressJSON = require('compress-json');
 
   /************************************************
    * External API information for requesting data
@@ -195,7 +198,7 @@ exports.handler = async (event, context, callback) => {
         params = { ...event.queryStringParameters };
 
         // declare cache routes
-        const cacheRoutes = ['/search', '/coins/categories/list', '/search/trending', '/derivatives', '/exchanges', '/derivatives/exchanges'];
+        const cacheRoutes = ['/search', '/coins/categories/list', '/search/trending', '/derivatives', '/exchanges', '/derivatives/exchanges', '/coins/markets'];
         const cacheContainRoutes = ['/companies/public_treasury/'];
 
         // check need cache
@@ -211,7 +214,7 @@ exports.handler = async (event, context, callback) => {
 
         // check cache
         if (needCache && resCache && resCache.data && resCache.data.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
-          res = { data: JSON.parse(resCache.data.data.Json) };
+          res = { data: path === '/search' ? compressJSON.decompress(JSON.parse(resCache.data.data.Json)) : JSON.parse(resCache.data.data.Json) };
         }
         else {
           // send request
@@ -251,7 +254,7 @@ exports.handler = async (event, context, callback) => {
             }
 
             // set cache
-            await setCache({ ID: id, API: apiName, Expired: expired, Json: JSON.stringify(res.data) });
+            await setCache({ ID: id, API: apiName, Expired: expired, Json: path === '/search' ? JSON.stringify(compressJSON.compress(res.data)) : JSON.stringify(res.data) });
           }
         }
         break;
@@ -362,10 +365,27 @@ exports.handler = async (event, context, callback) => {
         // setup query string parameters including limit
         params = { ...event.queryStringParameters, path };
 
-        // send request
-        res = await requester.get('', { params })
-          // set response data from error handled by exception
-          .catch(error => { return { data: { data: null, error } }; });
+        // generate id
+        id = `${apiName}_${generateUrl(path, params)}`;
+
+        // get cache
+        resCache = await getCache(id);
+
+        // check cache
+        if (resCache && resCache.data && resCache.data.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
+          res = { data: JSON.parse(resCache.data.data.Json) };
+        }
+        else {
+          // send request
+          res = await requester.get('', { params })
+            // set response data from error handled by exception
+            .catch(error => { return { data: { data: null, error } }; });
+
+          if (res && res.data && res.data.data) {
+            // set cache
+            await setCache({ ID: id, API: apiName, Expired: moment(time).add(5, 'minute').valueOf(), Json: JSON.stringify(res.data) });
+          }
+        }
         break;
       default: // do nothing
     }

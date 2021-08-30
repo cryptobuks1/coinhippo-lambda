@@ -115,7 +115,7 @@ exports.handler = async (event, context, callback) => {
   const route = event.queryStringParameters && event.queryStringParameters.path;
 
   // get current minute
-  const minute = Number(moment().minutes())
+  const minute = Number(moment().minutes());
 
   // request coins
   path = '/coins/markets';

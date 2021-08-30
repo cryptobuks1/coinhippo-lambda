@@ -133,7 +133,7 @@ exports.handler = async (event, context, callback) => {
         resCache = await getCache(id);
 
         // check cache
-        if (resCache && resCache.data && resCache.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
+        if (resCache && resCache.data && resCache.data.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
           res = { data: JSON.parse(resCache.data.data.Json) };
         }
         else {
@@ -173,7 +173,7 @@ exports.handler = async (event, context, callback) => {
         resCache = await getCache(id);
 
         // check cache
-        if (resCache && resCache.data && resCache.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
+        if (resCache && resCache.data && resCache.data.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
           res = { data: JSON.parse(resCache.data.data.Json) };
         }
         else {
@@ -194,14 +194,23 @@ exports.handler = async (event, context, callback) => {
         // setup query string parameters including limit
         params = { ...event.queryStringParameters };
 
-        // generate id
-        id = `${apiName}_${generateUrl(path, params)}`;
+        // declare cache routes
+        const cacheRoutes = ['/search', '/coins/categories/list', '/search/trending', '/derivatives', '/exchanges', '/derivatives/exchanges'];
+        const cacheContainRoutes = ['/companies/public_treasury/'];
 
-        // get cache
-        resCache = await getCache(id);
+        // check need cache
+        const needCache = cacheRoutes.includes(path) || cacheContainRoutes.findIndex(route => path.includes(route)) > -1;
+
+        if (needCache) {
+          // generate id
+          id = `${apiName}_${generateUrl(path, params)}`;
+
+          // get cache
+          resCache = await getCache(id);
+        }
 
         // check cache
-        if (resCache && resCache.data && resCache.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
+        if (needCache && resCache && resCache.data && resCache.data.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
           res = { data: JSON.parse(resCache.data.data.Json) };
         }
         else {
@@ -210,7 +219,7 @@ exports.handler = async (event, context, callback) => {
             // set response data from error handled by exception
             .catch(error => { return { data: { error } }; });
 
-          if (res && res.data && !res.data.error) {
+          if (needCache && res && res.data && !res.data.error) {
             let expired;
 
             switch (path) {
@@ -224,12 +233,12 @@ exports.handler = async (event, context, callback) => {
               case '/simple/price':
               case '/coins/markets':
               case '/coins/categories':
-              case '/derivatives':
-              case '/exchanges':
-              case '/derivatives/exchanges':
                 expired = moment(time).add(1, 'minute').valueOf();
                 break;
               case '/search/trending':
+              case '/derivatives':
+              case '/exchanges':
+              case '/derivatives/exchanges':
                 expired = moment(time).add(5, 'minute').valueOf();
                 break;
               default:
@@ -260,7 +269,7 @@ exports.handler = async (event, context, callback) => {
         resCache = await getCache(id);
 
         // check cache
-        if (resCache && resCache.data && resCache.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
+        if (resCache && resCache.data && resCache.data.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
           res = { data: JSON.parse(resCache.data.data.Json) };
         }
         else {
@@ -310,7 +319,7 @@ exports.handler = async (event, context, callback) => {
         resCache = await getCache(id);
 
         // check cache
-        if (resCache && resCache.data && resCache.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
+        if (resCache && resCache.data && resCache.data.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
           res = { data: JSON.parse(resCache.data.data.Json) };
         }
         else {

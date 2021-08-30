@@ -106,8 +106,8 @@ const parachains = {
       symbol: '',
     },
     2086: {
-      name: 'KILT Mainnet',
-      image: 'https://subscan.l2me.com/static/img/kilt-rococo.ee55757e.svg',
+      name: 'KILT Protocol',
+      image: 'https://subscan.l2me.com/static/img/kilt.7567a48f.png',
       symbol: '',
     },
     2088: {

@@ -8,10 +8,10 @@ exports.handler = async (event, context, callback) => {
 
   // import modules
   const { parachains } = require('./data');
+  const _ = require('lodash');
   const moment = require('moment');
   const jsonc = require('jsonc');
   const JSON = jsonc;
-  const compressJSON = require('compress-json');
 
   /************************************************
    * External API information for requesting data
@@ -214,7 +214,23 @@ exports.handler = async (event, context, callback) => {
 
         // check cache
         if (needCache && resCache && resCache.data && resCache.data.data && resCache.data.data.Json && resCache.data.data.Expired > time.valueOf()) {
-          res = { data: path === '/search' ? compressJSON.decompress(JSON.parse(resCache.data.data.Json)) : JSON.parse(resCache.data.data.Json) };
+          const data = JSON.parse(resCache.data.data.Json);
+
+          if (path === '/search') {
+            let coins = [];
+
+            for (let i = 0; i < resCache.data.data.CoinsChunk; i++) {
+              const _resCache = await getCache(`${id}_${i}`);
+
+              if (_resCache && _resCache.data && _resCache.data.data && _resCache.data.data.Json) {
+                coins = coins.concat(JSON.parse(_resCache.data.data.Json));
+              }
+            }
+
+            data.coins = coins;
+          }
+
+          res = { data };
         }
         else {
           // send request
@@ -254,7 +270,25 @@ exports.handler = async (event, context, callback) => {
             }
 
             // set cache
-            await setCache({ ID: id, API: apiName, Expired: expired, Json: path === '/search' ? JSON.stringify(compressJSON.compress(res.data)) : JSON.stringify(res.data) });
+            const cacheData = {
+              ID: id,
+              API: apiName,
+              Expired: expired,
+              Json: path === '/search' ? JSON.stringify({ ...res.data, coins: null }) : JSON.stringify(res.data)
+            };
+
+            if (path === '/search') {
+              const chunk = _.chunk(res.data.coins, 1000);
+              for (let i = 0; i < chunk.length; i++) {
+                const _cacheData = { ...cacheData, ID: `${id}_${i}`, Json: JSON.stringify(chunk[i]) };
+
+                await setCache(_cacheData);
+              }
+
+              cacheData.CoinsChunk = chunk.length;
+            }
+
+            await setCache(cacheData);
           }
         }
         break;

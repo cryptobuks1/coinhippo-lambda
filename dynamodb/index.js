@@ -233,36 +233,43 @@ exports.handler = async (event, context, callback) => {
   }
   // auto migrate data
   else {
-    const table_name = 'coinhippo-feeds';
+    const table_names = ['coinhippo-feeds', 'coinhippo-cache'];
 
-    let params = {
-      TableName: table_name,
-      Limit: 100,
-      ProjectionExpression: 'ID, SortKey, CreatedAt',
-      FilterExpression: 'CreatedAt < :time',
-      ExpressionAttributeValues: {
-        ':time': { N: moment().subtract(1, 'days').unix().toString() },
-      },
-    };
+    for (let i = 0; i < table_names; i++) {
+      const table_name = table_names[i];
 
-    response = { data: await scan(params) };
-
-    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-      const { data } = { ...response };
-
-      params = {
+      let params = {
         TableName: table_name,
+        Limit: 100,
+        ProjectionExpression: table_name === 'coinhippo-cache' ? 'ID, Expired' : 'ID, SortKey, CreatedAt',
+        FilterExpression: table_name === 'coinhippo-cache' ? 'Expired < :time' : 'CreatedAt < :time',
+        ExpressionAttributeValues: {
+          ':time': { N: moment().subtract(table_name === 'coinhippo-cache' ? 0 : 1, 'days').unix().toString() },
+        },
       };
 
-      for (let i = 0; i < data.length; i++) {
-        try {
-          params.Key = {
-            ID: data[i].ID,
-            SortKey: data[i].SortKey,
-          };
+      response = { data: await scan(params) };
 
-          await deleteItem(params);
-        } catch (error) {}
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        const { data } = { ...response };
+
+        params = {
+          TableName: table_name,
+        };
+
+        for (let j = 0; j < data.length; j++) {
+          try {
+            params.Key = {
+              ID: data[j].ID,
+            };
+
+            if (data[j].SortKey) {
+              params.Key.SortKey = data[j].SortKey;
+            }
+
+            await deleteItem(params);
+          } catch (error) {}
+        }
       }
     }
   }

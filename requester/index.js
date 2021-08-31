@@ -10,6 +10,7 @@ exports.handler = async (event, context, callback) => {
   const { parachains } = require('./data');
   const _ = require('lodash');
   const moment = require('moment');
+  const { compress, decompress } = require('compress-json');
   const jsonc = require('jsonc');
   const JSON = jsonc;
 
@@ -223,7 +224,7 @@ exports.handler = async (event, context, callback) => {
               const _resCache = await getCache(`${id}_${i}`);
 
               if (_resCache && _resCache.data && _resCache.data.data && _resCache.data.data.Json) {
-                coins = coins.concat(JSON.parse(_resCache.data.data.Json));
+                coins = coins.concat(decompress(JSON.parse(_resCache.data.data.Json)));
               }
             }
 
@@ -278,9 +279,9 @@ exports.handler = async (event, context, callback) => {
             };
 
             if (path === '/search') {
-              const chunk = _.chunk(res.data.coins, 1500);
+              const chunk = _.chunk(res.data.coins, 1000);
               for (let i = 0; i < chunk.length; i++) {
-                const _cacheData = { ...cacheData, ID: `${id}_${i}`, Json: JSON.stringify(chunk[i]) };
+                const _cacheData = { ...cacheData, ID: `${id}_${i}`, Json: JSON.stringify(compress(chunk[i])) };
 
                 await setCache(_cacheData);
               }

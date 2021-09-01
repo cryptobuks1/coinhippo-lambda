@@ -13,29 +13,17 @@
   const capitalize = s => typeof s !== 'string' ? '' : s.trim().split(' ').join('_').split('-').join('_').split('_').map(x => x.trim()).filter(x => x).map(x => `${x.substr(0, 1).toUpperCase()}${x.substr(1)}`).join(' ');
 
   // constant
-  const api_host = process.env.REQUESTER_API_HOST || '{YOUR_REQUEST_API_HOST}';
+  const api_host = process.env.REQUESTER_API_HOST || 'https://yivbr6i51h.execute-api.us-east-1.amazonaws.com/default/requester';
   const website_url = process.env.WEBSITE_URL || 'https://coinhippo.io';
   const app_name = process.env.APP_NAME || 'CoinHippo';
   // aws s3
   const aws_s3_url = process.env.BLOG_AWS_S3_URL || 'https://s3.amazonaws.com';
-  const aws_s3_bucket = process.env.BLOG_AWS_S3_BUCKET || '{YOUR_BLOG_AWS_S3_BUCKET}';
+  const aws_s3_bucket = process.env.BLOG_AWS_S3_BUCKET || 'assets.coinhippo.io';
   // default meta
-  const default_title = process.env.DEFAULT_TITLE || `CoinHippo | Today's Cryptocurrency Prices & Market Capitalization`;
-  const default_description = process.env.DEFAULT_DESCRIPTION || `See current top coins by market cap, leading exchange by confidences, trending search, DeFi, DEX, Futures Derivatives, and other exciting information in #crypto world.`;
+  const default_title = process.env.DEFAULT_TITLE || `Today's Cryptocurrency Prices & Market Capitalization | CoinHippo`;
+  const default_description = process.env.DEFAULT_DESCRIPTION || `Update on current top coins by market cap, leading exchange by confidences, trending search, DeFi, DEX, Futures Derivatives, and other exciting information in #crypto world.`;
   // dynamic paths
   const dynamic_paths = ['coin','exchange'];
-  // blockchains
-  const blockchains = [
-    { path: '/explorer/ethereum', title: 'Ethereum', network: 'mainnet', logo_url: 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png' },
-    { path: '/explorer/bsc', title: 'BSC', network: 'mainnet', logo_url: 'https://www.covalenthq.com/static/images/icons/display-icons/binance-coin-bnb-logo.png' },
-    { path: '/explorer/matic', title: 'Polygon', network: 'mainnet', logo_url: 'https://www.covalenthq.com/static/images/icons/display-icons/polygon-matic-logo.png' },
-    { path: '/explorer/avalanche', title: 'Avalanche', network: 'mainnet', logo_url: 'https://www.covalenthq.com/static/images/icons/display-icons/avalanche-avax-logo.png' },
-    { path: '/explorer/fantom', title: 'Fantom', network: 'mainnet', logo_url: 'https://www.covalenthq.com/static/images/icons/display-icons/fantom-ftm-logo.png' },
-    { path: '/explorer/rsk', title: 'RSK', network: 'mainnet', logo_url: 'https://www.covalenthq.com/static/images/icons/display-icons/rsk-mainnet-logo.png' },
-    { path: '/explorer/arbitrum', title: 'Arbitrum', network: 'mainnet', logo_url: 'https://www.covalenthq.com/static/images/icons/display-icons/arbitrum-mainnet-logo.png' },
-    { path: '/explorer/moonbeam-moonriver', title: 'Moonbeam', network: 'moonriver', logo_url: 'https://www.covalenthq.com/static/images/icons/display-icons/moonbeam-logo.png' },
-    { path: '/explorer/moonbeam-moonbase', title: 'Moonbeam', network: 'moonbase-alpha', logo_url: 'https://www.covalenthq.com/static/images/icons/display-icons/moonbeam-logo.png' },
-  ];
   // patterns for filter
   const bot_user_agent_patterns = ['facebook','twitter','google','slack','linkedin','pinterest'];
   const ignore_path_patterns = ['.js','.json','.css','.txt','.png','.xml','sitemap','/static','favicon'];
@@ -62,6 +50,7 @@
     // normalize path
     path = !path ? '/' : path.toLowerCase();
     path = path.startsWith('/widget/') ? path.substring('/widget'.length) : path;
+    path = path.includes('?') ? path.substring(0, path.indexOf('?')) : path;
 
     // split path
     const pathSplit = path.split('/').filter(x => x);
@@ -77,87 +66,51 @@
 
     if (pathSplit[0] === 'coins') {
       if (pathSplit[1] === 'high-volume') {
-        title = `Top Cryptocurrency Prices by High Volume | ${app_name}`;
-        description = `Get the top latest cryptocurrency prices ranking by their trade volume - including their market cap, percentage changes, chart, liquidity, and more.`;
+        title = `Coins - High Volume | ${app_name}`;
+        description = `See the list of top cryptocurrency prices by volume, along with their statistics that matter.`;
       }
       else if (pathSplit[1] === 'categories') {
-        title = `Top Cryptocurrency Categories by Market Cap | ${app_name}`;
-        description = `Get the top latest cryptocurrency categories ranking by their market cap - including their trade volume, percentage changes, chart, liquidity, and more.`;
-      }
-      else if (pathSplit[1] === 'defi') {
-        title = `Top Decentralized Finance (DeFi) Coins by Market Cap | ${app_name}`;
-        description = `Get the top latest decentralized finance (DeFi) coins prices ranking by their market cap - including their trade volume, percentage changes, chart, liquidity, and more.`;
-      }
-      else if (pathSplit[1] === 'nfts') {
-        title = `Top NFTs & Collectibles Coins by Market Cap | ${app_name}`;
-        description = `Get the top latest NFT (Non-fungible Token) token prices, market cap, percentage changes, chart, liquidity, and more.`;
-      }
-      else if (pathSplit[1] === 'bsc') {
-        title = `Binance Smart Chain (BSC) Ecosystem by Market Cap | ${app_name}`;
-        description = `Get top latest coins built on top of or are a part of the Binance Smart Chain (BSC) ecosystem with their prices, market cap, percentage changes, chart, liquidity, and more.`;
-      }
-      else if (pathSplit[1] === 'polkadot') {
-        title = `Polkadot (DOT) Ecosystem by Market Cap | ${app_name}`;
-        description = `Get top latest coins built on top of or are a part of the Polkadot (DOT) ecosystem with their prices, market cap, percentage changes, chart, liquidity, and more.`;
-      }
-      else if (pathSplit[1] === 'watchlist') {
+        title = `Coins - Category | ${app_name}`;
+        description = `See the list of cryptocurrencies by category, along with their statistics that matter.`;
       }
       else if (pathSplit[1]) {
-        title = `${capitalize(pathSplit[1])} by Market Cap | ${app_name}`;
-        description = `Get top latest coins built on top of or are a part of the ${capitalize(pathSplit[1])} with their prices, market cap, percentage changes, chart, liquidity, and more.`;
+        title = `${getName(pathSplit[1], true, data)} | ${app_name}`;
+        description = `See the list of cryptocurrencies by type, along with their statistics that matter.`;
       }
       else {
-        title = `Top Cryptocurrency Prices by Market Cap | ${app_name}`;
-        description = `Get the top latest cryptocurrency prices ranking by their market cap - including their trade volume, percentage changes, chart, liquidity, and more.`;
+        title = `Coins | ${app_name}`;
+        description = `See the list of top cryptocurrency prices by market capitalization, along with their statistics that matter.`;
       }
     }
     else if (pathSplit[0] === 'coin') {
       if (data) {
-        title = `${data.name} Price to USD | ${data.symbol ? data.symbol.toUpperCase() : data.name} Value, Markets, Chart | ${app_name}`;
-        description = `Explore what ${data.name} is. Get the ${data.symbol ? data.symbol.toUpperCase() : data.name} price today and convert it to your currencies; USDT, Dollars, CNY, JPY, HKD, AUD, NAIRA, EUR, GBP, THB, INR. See the BUY SELL indicator, chart history analysis, and news for FREE.`;
+        title = `${data.name} ${data.symbol ? `${data.symbol.toUpperCase()} ` : ''}| ${app_name}`;
+        description = `Get the latest ${data.name} price, ${data.symbol ? `${data.symbol.toUpperCase()} ` : ''}market cap, Technical charts and other information related to ${data.name}.`;
         image = data.image && data.image.large ? data.image.large : image;
-      }
-    }
-    else if (pathSplit[0] === 'explorer') {
-      if (pathSplit[1]) {
-        const index = blockchains.findIndex(c => c.path === _.slice(pathSplit, 0, 2).map(p => `/${p}`).join(''));
-        if (index > -1) {
-          title = `${blockchains[index].title} (${getName(blockchains[index].network, true)}) Explorer | ${app_name}`;
-          description = `Explore and search the ${blockchains[index].title} blockchain for addresses and transactions.`;
-          image = blockchains[index].logo_url;
-        }
-        if (pathSplit[2] === 'tx') {
-          title = `${blockchains[index].title} Transaction Hash: ${pathSplit[3]} | ${app_name}`;
-          description = `${blockchains[index].title} detailed transaction info for txhash ${pathSplit[3]}. The transaction status, block, gas fee, and token transfer are shown.`;
-        }
-        else if (pathSplit[2]) {
-          title = `${blockchains[index].title} address: ${pathSplit[2]} | ${app_name}`;
-          description = `You can view balances, token holdings and transactions of ${blockchains[index].title} address ${pathSplit[2]}.`;
-        }
       }
     }
     else if (pathSplit[0] === 'derivatives') {
       if (pathSplit[1] === 'futures') {
-        title = `Today's Top Cryptocurrency Futures Contract by Open Interest | ${app_name}`;
-        description = `Get the top cryptocurrency futures contract by open interest and trading volume. See their volume, changes percentage, prices history, and so on.`;
+        title = `Top Cryptocurrencies' Derivatives Futures Contract | ${app_name}`;
+        description = `See the list of cryptocurrencies' derivatives contracts by open interest, along with their statistics that matter.`;
       }
       else {
-        title = `Today's Top Cryptocurrency Derivatives by Open Interest | ${app_name}`;
-        description = `Get the top cryptocurrency derivatives perpetual contract by open interest and trading volume. See their volume, changes percentage, prices history, and so on.`;
+        title = `Top Cryptocurrencies' Derivatives Perpetual Contract | ${app_name}`;
+        description = `See the list of cryptocurrencies' derivatives contracts by open interest, along with their statistics that matter.`;
       }
     }
     else if (pathSplit[0] === 'exchanges') {
       if (pathSplit[1] === 'dex') {
-        title = `Today's Top Decentralized Exchanges by Volume | ${app_name}`;
-        description = `See the top decentralized exchanges (DEX) ranking by volume. See their information including country, volume, market share, and so on.`;
+        title = `Top Decentralized Exchanges by Volume | ${app_name}`;
+        description = `See the list of top decentralized exchanges by volume, along with their statistics that matter.`;
       }
       else if (pathSplit[1] === 'derivatives') {
-        title = `Today's Top Cryptocurrency Derivatives Exchanges by Volume | ${app_name}`;
-        description = `See the top cryptocurrency derivatives exchanges ranking by open interest. See their information including country, volume, market share, and so on.`;
+        title = `Top Derivatives Exchanges by Volume | ${app_name}`;
+        description = `See the list of top derivatives exchanges by volume, along with their statistics that matter.`;
       }
       else {
-        title = `Today's Top Cryptocurrency Exchanges by Confidence | ${app_name}`;
-        description = `See the top spot cryptocurrency exchanges ranking by confidence. See their information including country, volume, market share, and so on.`;
+        title = `Top Exchanges by Confidence | ${app_name}`;
+        description = `See the list of top exchanges by confidence, along with their statistics that matter.`;
       }
     }
     else if (pathSplit[0] === 'exchange') {
@@ -167,17 +120,50 @@
         image = typeof data.image === 'string' ? data.image.replace('small', 'large') : image;
       }
     }
-    else if (pathSplit[0] === 'news') {
-      title = `Today's Latest Cryptocurrency News | ${app_name}`;
-      description = `Keep up with breaking news on cryptocurrencies that influence the market.`;
+    else if (pathSplit[0] === 'watchlist') {
+      title = `Watchlist | ${app_name}`;
+      description = `Build your own personalized watchlist, and keep track of your favorite cryptocurrencies.`;
     }
-    else if (pathSplit[0] === 'updates') {
-      title = `Cryptocurrency Project Update | ${app_name}`;
-      description = `Keep up with significant cryptocurrency projects' updates, including milestone updates, partnership, fund movement, etc.`;
+    else if (pathSplit[0] === 'public-companies') {
+      if (pathSplit[1]) {
+        title = `${getName(pathSplit[1], true)} Holdings by Public Companies | ${app_name}`;
+        description = `See the list of publicly traded companies that are buying ${getName(pathSplit[1], true)} as part of corporate treasury.`;
+      }
+      else {
+        title = `Crypto Holdings by Public Companies | ${app_name}`;
+        description = `See the list of publicly traded companies that are buying crypto as part of corporate treasury.`;
+      }
     }
-    else if (pathSplit[0] === 'events') {
-      title = `Cryptocurrency Events | ${app_name}`;
-      description = `Check updated events, conferences, meetups information of cryptocurrency projects.`;
+    else if (pathSplit[0] === 'parachains') {
+      title = `${getName(pathSplit[1], true)} Parachain | ${app_name}`;
+      description = `See the list of ${getName(pathSplit[1], true)} parachain projects`;
+    }
+    else if (pathSplit[0] === 'wallet') {
+      if (pathSplit[1]) {
+        description = `Scan wallet and see assets inside`;
+      }
+      else {
+        title = `Wallet Explorer | ${app_name}`;
+        description = `Scan wallet and see assets inside`;
+      }
+    }
+    else if (pathSplit[0] === 'farm') {
+      if (pathSplit[1]) {
+        title = `DeFi Farming in ${getName(pathSplit[1], true, data)} | ${app_name}`;
+        description = `See top available pools in ${getName(pathSplit[1], true, data)}, along with their liquidity, volume, and other important information.`;
+      }
+      else {
+        title = `DeFi Farming | ${app_name}`;
+        description = `See top available pools, along with their liquidity, volume, and other important information.`;
+      }
+    }
+    else if (pathSplit[0] === 'feeds') {
+      title = `Cryptocurrency Feed | ${app_name}`;
+      description = `Catch up on price changes, trading signals, trends, and news in #crypto world.`;
+    }
+    else if (pathSplit[0] === 'widgets') {
+      title = `Widgets | ${app_name}`;
+      description = `Embed ${app_name}'s cryptocurrency widgets to your website or blog for free.`;
     }
     else if (pathSplit[0] === 'blog') {
       if (pathSplit[1] && data && data.meta) {
@@ -190,10 +176,6 @@
         title = `Cryptocurrency, Blockchain Technology, and Trading Blog | ${app_name}`;
         description = `Read our high-quality and free blog post covering the cryptocurrency world and blockchain technology.`;
       }
-    }
-    else if (pathSplit[0] === 'widgets') {
-      title = `Free Cryptocurrency Widgets | ${app_name}`;
-      description = `Embed ${app_name}'s cryptocurrency widgets to your website or blog for free.`;
     }
     return { browser_title: title, title, description, url, image, breadcrumb };
   };

@@ -33,7 +33,7 @@ const parachains = {
     2006: {
       name: 'Darwinia Crab Redirect',
       image: 'https://subscan.l2me.com/static/img/crab-rococo.6bdc3ead.svg',
-      symbol: '',
+      symbol: 'CRING',
     },
     2008: {
       name: 'Mars',
@@ -43,72 +43,72 @@ const parachains = {
     2009: {
       name: 'Polkasmith',
       image: 'https://subscan.l2me.com/static/img/polkasmith.e6498199.svg',
-      symbol: '',
+      symbol: 'PKS',
     },
     2012: {
       name: 'Crust Shadow',
       image: 'https://subscan.l2me.com/static/img/crust-shadow.38019fe3.svg',
-      symbol: '',
+      symbol: 'CRU',
     },
     2013: {
       name: 'SherpaX',
       image: 'https://subscan.l2me.com/static/img/chainx-rococo.f98a4fc0.svg',
-      symbol: '',
+      symbol: 'KSX',
     },
     2015: {
       name: 'IntegriTEE Network',
       image: 'https://subscan.l2me.com/static/img/integritee.06afbbb4.png',
-      symbol: '',
+      symbol: 'TEER',
     },
     2016: {
       name: 'Sakura',
       image: 'https://subscan.l2me.com/static/img/sakura.bafa77e6.svg',
-      symbol: '',
+      symbol: 'SKU',
     },
     2018: {
       name: 'SubGame Gamma',
       image: 'https://subscan.l2me.com/static/img/subgame.0c9971a9.png',
-      symbol: '',
+      symbol: 'GSGB',
     },
     2019: {
       name: 'Kpron',
       image: 'https://subscan.l2me.com/static/img/apron-rococo.3d8927b2.png',
-      symbol: '',
+      symbol: 'KPN',
     },
     2021: {
       name: 'Altair',
       image: 'https://subscan.l2me.com/static/img/altair.2dc2d263.svg',
-      symbol: '',
+      symbol: 'AIR',
     },
     2024: {
       name: 'Genshiro',
       image: 'https://subscan.l2me.com/static/img/genshiro.474e0dd7.svg',
-      symbol: '',
+      symbol: 'GENS',
     },
     2077: {
       name: 'Robonomics',
       image: 'https://subscan.l2me.com/static/img/robonomics-rococo.625acf96.svg',
-      symbol: '',
+      symbol: 'XRT',
     },
     2078: {
       name: 'Trustbase',
       image: 'https://subscan.l2me.com/static/img/trustbase-rococo.32ab8c6b.png',
-      symbol: '',
+      symbol: 'TBE',
     },
     2080: {
       name: 'Loom Network',
       image: 'https://subscan.l2me.com/static/img/loom_network.1d03fe35.png',
-      symbol: '',
+      symbol: 'LOOM',
     },
     2082: {
       name: 'Basillisk',
       image: 'https://subscan.l2me.com/static/img/basilisk.dc318bb2.png',
-      symbol: '',
+      symbol: 'BSX',
     },
     2086: {
       name: 'KILT Protocol',
       image: 'https://subscan.l2me.com/static/img/kilt.7567a48f.png',
-      symbol: '',
+      symbol: 'KILT',
     },
     2088: {
       name: '',
@@ -131,9 +131,9 @@ const parachains = {
       symbol: '',
     },
     2084: {
-      name: '',
-      image: '',
-      symbol: '',
+      name: 'Calamari',
+      image: 'https://subscan.l2me.com/static/img/calamari.b3f49427.png',
+      symbol: 'KMA',
     },
     2079: {
       name: '',

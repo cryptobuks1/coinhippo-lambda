@@ -244,7 +244,7 @@ exports.handler = async (event, context, callback) => {
         ProjectionExpression: table_name === 'coinhippo-cache' ? 'ID, Expired' : 'ID, SortKey, CreatedAt',
         FilterExpression: table_name === 'coinhippo-cache' ? 'Expired < :time' : 'CreatedAt < :time',
         ExpressionAttributeValues: {
-          ':time': { N: moment().subtract(table_name === 'coinhippo-cache' ? 0 : 1, 'days').unix().toString() },
+          ':time': { N: (moment().subtract(table_name === 'coinhippo-cache' ? 0 : 1, 'days').unix() * (['coinhippo-cache'].includes(table_name) ? 1000 : 1)).toString() },
         },
       };
 

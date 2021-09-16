@@ -38,7 +38,7 @@ const parachains = {
     2008: {
       name: 'Mars',
       image: 'https://subscan.l2me.com/static/img/ares.557db986.svg',
-      symbol: '',
+      symbol: 'AMAS',
     },
     2009: {
       name: 'Polkasmith',

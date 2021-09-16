@@ -235,7 +235,7 @@ exports.handler = async (event, context, callback) => {
   else {
     const table_names = ['coinhippo-feeds', 'coinhippo-cache'];
 
-    for (let i = 0; i < table_names; i++) {
+    for (let i = 0; i < table_names.length; i++) {
       const table_name = table_names[i];
 
       let params = {

@@ -195,7 +195,7 @@ exports.handler = async (event, context, callback) => {
       case 'coingecko':
         // normalize path parameter
         path = path || '';
-        // setup query string parameters including limit
+        // setup query string parameters
         params = { ...event.queryStringParameters };
 
         // declare cache routes
@@ -336,7 +336,7 @@ exports.handler = async (event, context, callback) => {
       case 'coinmarketcap':
         // normalize path parameter
         path = path || '';
-        // setup query string parameters including limit
+        // setup query string parameters
         params = { ...event.queryStringParameters };
 
         // send request
@@ -347,7 +347,7 @@ exports.handler = async (event, context, callback) => {
       case 'subscan':
         // normalize path parameter
         path = path || '';
-        // setup query string parameters including limit
+        // setup query string parameters
         params = Object.fromEntries(new Map(Object.entries(event.queryStringParameters).map(([key, value]) => [key, !isNaN(value) ? Number(value) : (value && value.includes(',')) || ['status'].includes(key) ? value.split(',') : value])));
 
         // generate id
@@ -397,7 +397,7 @@ exports.handler = async (event, context, callback) => {
       case 'analytics':
         // normalize path parameter
         path = path || '';
-        // setup query string parameters including limit
+        // setup query string parameters
         params = { ...event.queryStringParameters, path };
 
         // generate id
